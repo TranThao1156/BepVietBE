@@ -1,5 +1,10 @@
 <?php
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\CongThucController;
 use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login']);
+
 Route::post('/register', [AuthController::class, 'register']);
+
+// Thảo
+Route::get('/ds-cong-thuc', [CongThucController::class, 'index']);
