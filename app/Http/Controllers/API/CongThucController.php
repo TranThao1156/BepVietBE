@@ -58,4 +58,24 @@ class CongThucController extends Controller
             'data' => $congThuc
         ], 201);
     }
+
+    // Thảo - Chi tiết công thức
+    public function show($id)
+    {
+        $congThuc = $this->congThucService->chiTietCongThuc($id);
+
+        if (!$congThuc) {
+            return response()->json([
+                'message' => 'Không tìm thấy công thức'
+            ], 404);
+        }
+
+        // tăng lượt xem
+        $congThuc->increment('SoLuotXem');
+
+        return response()->json([
+            'message' => 'Lấy chi tiết công thức thành công',
+            'data' => $congThuc
+        ], 200);
+    }
 }

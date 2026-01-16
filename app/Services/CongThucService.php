@@ -37,4 +37,11 @@ class CongThucService
         ]);
     }
 
+    // Thảo - Chi tiết công thức
+    public function chiTietCongThuc(int $maCT)
+    {
+        return CongThuc::where('Ma_CT', $maCT)
+            ->where('TrangThai', 1)
+            ->first();
+    }
 }
