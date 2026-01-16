@@ -16,4 +16,25 @@ class CongThucService
         // Phân trang
         return $query->paginate($boLoc['limit'] ?? 5);
     }
+
+    // Thảo - Thêm công thức
+    public function themCongThuc(array $duLieu)
+    {
+        return CongThuc::create([
+            'TenMon'         => $duLieu['TenMon'],
+            'MoTa'           => $duLieu['MoTa'] ?? null,
+            'KhauPhan'       => $duLieu['KhauPhan'],
+            'DoKho'          => $duLieu['DoKho'],
+            'ThoiGianNau'    => $duLieu['ThoiGianNau'],
+            'HinhAnh'        => $duLieu['HinhAnh'] ?? null,
+            'TrangThaiDuyet' => 0, // mặc định chờ duyệt
+            'SoLuotXem'      => 0,
+            'Ma_VM'          => $duLieu['Ma_VM'] ?? null,
+            'Ma_LM'          => $duLieu['Ma_LM'],
+            'Ma_DM'          => $duLieu['Ma_DM'],
+            'Ma_ND'          => $duLieu['Ma_ND'],
+            'TrangThai'      => 1
+        ]);
+    }
+
 }

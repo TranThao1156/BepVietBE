@@ -6,5 +6,10 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/register', [AuthController::class, 'register']);
 
-// Thảo
-Route::get('/ds-cong-thuc', [CongThucController::class, 'index']);
+// Thảo - danh sách công thức
+Route::get('/cong-thuc', [CongThucController::class, 'index']);
+
+Route::get('/cong-thuc/{id}', [CongThucController::class, 'show']);
+
+// Thảo - Thêm công thức
+Route::post('/them-cong-thuc', [CongThucController::class, 'themCongThuc']);
