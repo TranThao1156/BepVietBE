@@ -14,7 +14,7 @@ class CongThucService
             ->where('TrangThaiDuyet', "Chấp nhận");
 
         // Phân trang
-        return $query->paginate($boLoc['limit'] ?? 5);
+        return $query->paginate($boLoc['limit'] ?? 6);
     }
 
     // Thảo - Thêm công thức
