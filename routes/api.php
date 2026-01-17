@@ -1,7 +1,9 @@
 <?php
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CongThucController;
+use App\Http\Controllers\API\CookbookController;
 use Illuminate\Support\Facades\Route;
+
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -16,3 +18,5 @@ Route::post('/them-cong-thuc', [CongThucController::class, 'themCongThuc']);
 
 // Thảo - Lấy danh sách công thức theo user
 
+//Khôi
+Route::post('/cookbook/create', [CookbookController::class, 'store']);
