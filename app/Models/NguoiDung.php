@@ -8,7 +8,7 @@ class NguoiDung extends Model
 {
     protected $table = 'nguoidung';
     protected $primaryKey = 'Ma_ND';
-    public $timestamps = true;
+    public $timestamps = false;
 
     protected $fillable = [
         'TenTK',
