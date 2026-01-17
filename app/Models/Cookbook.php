@@ -18,4 +18,13 @@ class Cookbook extends Model
         'TrangThai',
         'AnhBia'
     ];
+    protected $appends = ['anh_bia_url'];
+
+    public function getAnhBiaUrlAttribute()
+    {
+        if ($this->AnhBia) {
+            return asset('uploads/cookbooks/' . $this->AnhBia);
+        }
+        return 'https://placehold.co/600x400?text=No+Image';
+    }
 }

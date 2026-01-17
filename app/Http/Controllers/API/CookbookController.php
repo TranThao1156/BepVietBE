@@ -3,13 +3,20 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Cookbook;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth; // Thêm dòng này để dùng Auth
+use App\Services\CookbookService;
 
 class CookbookController extends Controller
 {
+    protected $cookbookService;
+    public function __construct(CookbookService $cookbookService)
+    {
+        $this->cookbookService = $cookbookService;
+    }
     public function store(Request $request)
     {
         // 1. Validate dữ liệu
@@ -60,4 +67,30 @@ class CookbookController extends Controller
             return response()->json(['message' => 'Lỗi Server: ' . $e->getMessage()], 500);
         }
     }
-}
+    public function danhSach(Request $request)
+    {
+        $user = auth('sanctum')->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi: Token hết hạn hoặc không hợp lệ.',
+                'debug_info' => 'User is NULL'
+            ], 401);
+        }
+
+        try {
+            // Gọi Service để lấy dữ liệu đã được format đẹp
+            $data = $this->cookbookService->layDanhSachTheoUser($user->Ma_ND);
+
+            return response()->json([
+                'success' => true,
+                'debug_user_id' => $user->id,
+                'id_nguoi_dung_thuc_te' => $user->Ma_ND,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+}   
