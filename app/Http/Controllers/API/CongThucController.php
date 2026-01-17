@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CongThuc;
 use Illuminate\Http\Request;
 use App\Services\CongThucService;
+use Illuminate\Support\Facades\Cache;
 
 // Thảo
 class CongThucController extends Controller
@@ -32,7 +33,7 @@ class CongThucController extends Controller
             'data'    => $duLieu
         ]);
     }
-    
+
     // Thảo - Thêm công thức
     public function themCongThuc(Request $request)
     {
@@ -60,25 +61,38 @@ class CongThucController extends Controller
         ], 201);
     }
 
+
+    // public function store(Request $request)
+    // {
+    //     $user = $request->user();
+
+    //     $congThuc = CongThuc::create([
+    //         'TenMon' => $request->TenMon,
+    //         'MoTa' => $request->MoTa,
+    //         'Ma_ND' => $user->Ma_ND,
+    //         // các field khác
+    //     ]);
+
+    //     return response()->json($congThuc);
+    // }
+
+
     // Thảo - Chi tiết công thức
-    public function show($id)
+    public function show($id, Request $request)
     {
         $congThuc = $this->congThucService->chiTietCongThuc($id);
-
-        if (!$congThuc) {
-            return response()->json([
-                'message' => 'Không tìm thấy công thức'
-            ], 404);
+        $key = 'view_ct_' . $id . '_' . request()->ip();
+        if (!Cache::has($key)) {
+            CongThuc::where('Ma_CT', $id)->increment('SoLuotXem');
+            // Hết 10p thì được +1 lượt xem
+            Cache::put($key, true, now()->addMinutes(10));
         }
-
-        // tăng lượt xem
-        $congThuc->increment('SoLuotXem');
-
         return response()->json([
             'message' => 'Lấy chi tiết công thức thành công',
             'data' => $congThuc
-        ], 200);
+        ]);
     }
+
 
     // Thảo - Lấy danh sách công thức theo người dùng
     public function CongThucCuaToi(Request $request)

@@ -28,5 +28,13 @@ class NguoiDung extends Model
         'TrangThai'
     ];
     protected $hidden = ['MatKhau', 'remember_token'];
-    
+    public function getAuthPassword()
+    {
+        return $this->MatKhau;
+    }
+
+    public function congThuc()
+    {
+        return $this->hasMany(CongThuc::class, 'Ma_ND');
+    }
 }

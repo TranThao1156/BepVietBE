@@ -99,7 +99,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
 
-    
+
         // Đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
 

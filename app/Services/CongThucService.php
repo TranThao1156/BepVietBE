@@ -17,6 +17,46 @@ class CongThucService
         return $query->paginate($boLoc['limit'] ?? 6);
     }
 
+    // Thảo - Chi tiết công thức
+    public function chiTietCongThuc(int $maCT)
+    {
+        $congThuc = CongThuc::with([
+            'loaiMon',
+            'vungMien',
+            'nguyenLieu',
+            'buocThucHien',
+            'nguoidung'
+        ])->findOrFail($maCT);
+
+        // Lấy món liên quan
+        $monLienQuan = CongThuc::where('Ma_CT', '!=', $maCT)
+            ->where('TrangThai', 1)
+            ->where('TrangThaiDuyet', 'Chấp nhận')
+            ->where(function ($q) use ($congThuc) {
+                $q->where('Ma_LM', $congThuc->Ma_LM)
+                    ->orWhere('Ma_VM', $congThuc->Ma_VM);
+            })
+            ->with('nguoidung')
+            ->orderByDesc('SoLuotXem')
+            ->limit(4)
+            ->get();
+
+        // Gắn thêm vào object trả về
+        $congThuc->mon_lien_quan = $monLienQuan;
+
+        return $congThuc;
+    }
+
+
+
+    public function LayDsCongThucByUser(int $userId, int $limit = 10)
+    {
+        return CongThuc::where('Ma_ND', $userId)
+            ->orderByDesc('created_at')
+            ->paginate($limit);
+    }
+
+
     // Thảo - Thêm công thức
     public function themCongThuc(array $duLieu)
     {
@@ -35,20 +75,5 @@ class CongThucService
             'Ma_ND'          => $duLieu['Ma_ND'],
             'TrangThai'      => 1
         ]);
-    }
-
-    // Thảo - Chi tiết công thức
-    public function chiTietCongThuc(int $maCT)
-    {
-        return CongThuc::where('Ma_CT', $maCT)
-            ->where('TrangThai', 1)
-            ->first();
-    }
-
-    public function LayDsCongThucByUser(int $userId, int $limit = 10)
-    {
-        return CongThuc::where('Ma_ND', $userId)
-            ->orderByDesc('created_at')
-            ->paginate($limit);
     }
 }
