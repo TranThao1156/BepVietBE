@@ -29,4 +29,12 @@ class CongThuc extends Model
         'Ma_ND',
         'TrangThai'
     ];
+
+    public function nguoi_dung() {
+        return $this->belongsTo(NguoiDung::class, 'Ma_ND', 'Ma_ND');
+    }
+    
+    public function danh_muc() {
+        return $this->belongsTo(DanhMuc::class, 'Ma_DM', 'Ma_DM');
+    }
 }
