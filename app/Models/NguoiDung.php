@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Sanctum\HasApiTokens;
 
-class NguoiDung extends Model
+class NguoiDung extends Authenticatable
 {
+    use HasApiTokens, HasFactory, Notifiable;
     protected $table = 'nguoidung';
     protected $primaryKey = 'Ma_ND';
     public $timestamps = false;
@@ -23,6 +27,14 @@ class NguoiDung extends Model
         'VaiTro',
         'TrangThai'
     ];
+    protected $hidden = ['MatKhau', 'remember_token'];
+    public function getAuthPassword()
+    {
+        return $this->MatKhau;
+    }
 
-    protected $hidden = ['MatKhau'];
+    public function congThuc()
+    {
+        return $this->hasMany(CongThuc::class, 'Ma_ND');
+    }
 }

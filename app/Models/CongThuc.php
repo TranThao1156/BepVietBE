@@ -4,13 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\NguoiDung;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CongThuc extends Model
 {
-    //16/01/2026 Thi tạo model Công Thức
-
+    use HasFactory;
+//Thảo 
     protected $table = 'congthuc';
     public $timestamps = true;
+    public $incrementing = true;
+    protected $keyType = 'int';
     protected $primaryKey = 'Ma_CT';
 
     protected $fillable = [
@@ -46,4 +49,22 @@ class CongThuc extends Model
         return $this->hasMany(DanhGia::class, 'Ma_CT', 'Ma_CT');
     }
 
+    public function nguyenLieu()
+    {
+        return $this->belongsToMany(
+            NguyenLieu::class,
+            'nl_cthuc',
+            'Ma_CT',
+            'Ma_NL'
+        )->withPivot('DinhLuong');
+    }
+
+    public function buocThucHien()
+    {
+        return $this->hasMany(
+            BuocThucHien::class,
+            'Ma_CT',
+            'Ma_CT'
+        )->orderBy('STT');
+    }
 }

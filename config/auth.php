@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'api' => [
+            'driver' => 'sanctum', // Quan trọng: driver phải là sanctum
+            'provider' => 'users',
+        ]
     ],
 
     /*
@@ -63,6 +67,7 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model' => App\Models\NguoiDung::class,
         ],
 
         // 'users' => [
