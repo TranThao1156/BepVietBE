@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\CongThuc;
 use Illuminate\Http\Request;
 use App\Services\CongThucService;
 
@@ -77,5 +78,20 @@ class CongThucController extends Controller
             'message' => 'Lấy chi tiết công thức thành công',
             'data' => $congThuc
         ], 200);
+    }
+
+    // Thảo - Lấy danh sách công thức theo người dùng
+    public function CongThucCuaToi(Request $request)
+    {
+        $user = $request->user();
+        $limit = $request->get('limit', 10);
+
+        $data = $this->congThucService->LayDsCongThucByUser($user->id, $limit);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Lấy danh sách công thức của bạn thành công',
+            'data' => $data
+        ]);
     }
 }

@@ -44,4 +44,11 @@ class CongThucService
             ->where('TrangThai', 1)
             ->first();
     }
+
+    public function LayDsCongThucByUser(int $userId, int $limit = 10)
+    {
+        return CongThuc::where('Ma_ND', $userId)
+            ->orderByDesc('created_at')
+            ->paginate($limit);
+    }
 }

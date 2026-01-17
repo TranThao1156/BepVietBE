@@ -14,3 +14,5 @@ Route::get('/cong-thuc/{id}', [CongThucController::class, 'show']);
 // Thảo - Thêm công thức
 Route::post('/them-cong-thuc', [CongThucController::class, 'themCongThuc']);
 
+// Thảo - Lấy danh sách công thức theo user
+
