@@ -19,7 +19,7 @@ class DoiMatKhauController extends Controller
 
     public function doiMatKhau(Request $request)
     {
-        // 1. Validate (Giữ nguyên như cũ)
+        // 1. Validate dữ liệu đầu vào
         $request->validate([
             'current_password' => 'required',
             'new_password'     => 'required|min:8|regex:/[0-9]/|regex:/[@$!%*#?&]/|confirmed',

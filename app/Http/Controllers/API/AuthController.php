@@ -11,8 +11,10 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
+        // 1. Tìm user theo tên tài khoản
         $user = NguoiDung::where('TenTK', $request->TenTK)->first();
 
+        // 2. Kiểm tra user tồn tại
         if (!$user) {
             return response()->json([
                 'success' => false,
@@ -20,6 +22,7 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // 3. Kiểm tra mật khẩu
         if (!Hash::check($request->MatKhau, $user->MatKhau)) {
             return response()->json([
                 'success' => false,
@@ -27,10 +30,23 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // 4. Tạo Token (QUAN TRỌNG: Để dùng cho Middleware auth:sanctum)
+        $token = $user->createToken('authToken')->plainTextToken;
+
+        // 5. Trả về dữ liệu (Đã lọc bỏ mật khẩu)
         return response()->json([
             'success' => true,
             'message' => 'Đăng nhập thành công',
-            'user' => $user
+            'token' => $token, 
+            'user' => [
+                // Chỉ lấy những thông tin cần thiết
+                'id' => $user->getKey(), // Lấy ID (dù là id hay Ma_ND)
+                'TenTK' => $user->TenTK,
+                'HoTen' => $user->HoTen,
+                'Email' => $user->Email,
+                'AnhDaiDien' => $user->AnhDaiDien,
+                'VaiTro' => $user->VaiTro, // QUAN TRỌNG: React cần cái này để phân quyền
+            ]
         ]);
     }
 
@@ -52,14 +68,14 @@ class AuthController extends Controller
             'DiaChi'    => $request->DiaChi,
             'GioiTinh'  => $request->GioiTinh,
             'QuocTich'  => $request->QuocTich,
-            'VaiTro'    => 1,
+            'VaiTro'    => 1, 
             'TrangThai' => 1
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Đăng ký thành công',
-            'user' => $user
+            
         ]);
     }
 }
