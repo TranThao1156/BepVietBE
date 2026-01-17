@@ -10,10 +10,10 @@ use App\Services\BlogService;
 class BlogController extends Controller
 {
     //Thi
-    // Lấy danh sách blog mới nhất (6 bài mới nhất)
-    public function layDSBlogMoiNhat(BlogService $blogService)
+    // Lấy danh sách blog 
+    public function layDSBlog(BlogService $blogService)
     {
-        $data = $blogService->layDSBlogMoi();
+        $data = $blogService->layDSBlog();
 
             return response()->json([
                 'success' => true,
