@@ -12,7 +12,7 @@ use App\Http\Controllers\API\CookbookController;
 use App\Http\Controllers\API\QuanLyController;
 use App\Http\Controllers\API\NguoiDungController;
 use App\Http\Controllers\API\KhachController;
-
+use App\Http\Controllers\API\BlogController;
 
 // 1. PUBLIC ROUTES (KHÔNG CẦN ĐĂNG NHẬP)
 
@@ -34,8 +34,8 @@ Route::get('/cong-thuc/{id}', [CongThucController::class, 'show']);
 
 
 // Danh sách Blog
-
-
+// Thi - Lấy danh sách blog mới nhất (6 bài mới nhất)
+Route::get('/blog', [BlogController::class, 'layDSBlogMoiNhat']);
 // Chi tiết Blog
 
 
