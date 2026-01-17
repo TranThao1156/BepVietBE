@@ -91,7 +91,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // 4. Cookbook (Bộ sưu tập)
 
         //Khôi
-        Route::post('/cookbook/create', [CookbookController::class, 'store']);
+        Route::post('/cookbook/tao-cookbook', [CookbookController::class, 'store']);
 
 
     // 5. Thêm công thức vào cookbook
