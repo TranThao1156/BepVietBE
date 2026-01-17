@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'vaitro' => KiemTraVaiTro::class,
         ]);
+        $middleware->alias([
+            'role' => KiemTraVaiTro::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
