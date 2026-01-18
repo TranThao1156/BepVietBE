@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CongThucController;
 use App\Http\Controllers\API\CookbookController;
-
+use App\Http\Controllers\API\DanhMucController;
 use App\Http\Controllers\API\QuanLyController;
 use App\Http\Controllers\API\NguoiDungController;
 use App\Http\Controllers\API\KhachController;
@@ -33,11 +33,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // Middleware 'role:0' kiểm tra user->VaiTro === 0
     // ----------------------------------------------------------------
     Route::prefix('admin')->middleware('role:0')->group(function () {
+        Route::get('danh-muc', [DanhMucController::class, 'index']);
+        Route::post('danh-muc/tao-danh-muc', [DanhMucController::class, 'store']);
+        Route::delete('danh-muc/{id}', [DanhMucController::class, 'destroy']);
 
     });
     // B. NHÓM API NGƯỜI DÙNG (Cả admin và user đều có quyền sử dụng các chức năng trên)
     Route::prefix('user')->middleware('role:1')->group(function () {
     // Thảo - Thêm công thức
+
         Route::post('/them-cong-thuc', [CongThucController::class, 'themCongThuc']);
     // 4. Cookbook (Bộ sưu tập)
         //Khôi
