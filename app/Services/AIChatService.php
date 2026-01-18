@@ -19,6 +19,7 @@ class AIChatService
     {
         try {
             $response = $this->client->post($this->apiUrl, [
+                'verify' => false,
                 'headers' => [
                     'Authorization' => 'Bearer ' . env('HF_API_KEY'),
                     'Content-Type'  => 'application/json',

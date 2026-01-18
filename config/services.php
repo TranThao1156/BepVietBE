@@ -38,4 +38,5 @@ return [
         'key' => env('HUGGINGFACE_API_KEY'),
         'endpoint' => env('HUGGINGFACE_ENDPOINT'),
     ],
+    
 ];
