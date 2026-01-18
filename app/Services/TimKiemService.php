@@ -22,19 +22,21 @@ class TimKiemService
         }
 
         // 2. SẮP XẾP (Sửa LuotXem -> SoLuotXem)
-        $sort = $request->get('sort', 'newest');
+      $sort = $request->get('sort', 'newest');
         switch ($sort) {
             case 'popular':
-                $query->orderBy('SoLuotXem', 'desc'); // Sửa tên cột ở đây
+                $query->orderBy('SoLuotXem', 'desc');
                 break;
             case 'oldest':
-                $query->orderBy('created_at', 'asc');
+                // Sửa created_at -> Ma_CT (Sắp xếp theo ID tăng dần = Cũ nhất)
+                $query->orderBy('Ma_CT', 'asc'); 
                 break;
             default: // newest
-                $query->orderBy('created_at', 'desc');
+                // Sửa created_at -> Ma_CT (Sắp xếp theo ID giảm dần = Mới nhất)
+                $query->orderBy('Ma_CT', 'desc'); 
                 break;
         }
 
         return $query->paginate(6);
-    }
+        }
 }
