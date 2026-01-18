@@ -17,7 +17,7 @@ class DanhMucService
         }
 
         // Sắp xếp mới nhất lên đầu, phân trang 10 dòng
-        return $query->orderBy('created_at', 'asc')->paginate(10);
+        return $query->orderBy('created_at', 'desc')->paginate(10);
     }
     public function create(array $data)
     {

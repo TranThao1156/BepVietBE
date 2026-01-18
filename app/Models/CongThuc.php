@@ -34,6 +34,7 @@ class CongThuc extends Model
 
     public function nguoidung()
     {
+        // Liên kết đến bảng NguoiDung thông qua Ma_ND
         return $this->belongsTo(NguoiDung::class, 'Ma_ND', 'Ma_ND');
     }
 

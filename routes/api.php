@@ -51,6 +51,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/cookbook/tao-cookbook', [CookbookController::class, 'store']);
 
+        Route::put('/cookbook/{id}', [CookbookController::class, 'destroy']);
+        Route::get('/cookbook/chi-tiet/{id}', [CookbookController::class, 'show']);
+
 
     // 5. Thêm công thức vào cookbook
 

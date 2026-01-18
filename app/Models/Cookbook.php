@@ -27,4 +27,13 @@ class Cookbook extends Model
         }
         return 'https://placehold.co/600x400?text=No+Image';
     }
+    public function congthucs()
+    {
+        // belongsToMany(ModelDich, BangTrungGian, KhoaNgoaiCuaModelNay, KhoaNgoaiCuaModelDich)
+        return $this->belongsToMany(CongThuc::class, 'ct_cookbook', 'Ma_CookBook', 'Ma_CT');
+    }
+    public function nguoidung()
+    {
+        return $this->belongsTo(NguoiDung::class, 'Ma_ND', 'Ma_ND');
+    }
 }
