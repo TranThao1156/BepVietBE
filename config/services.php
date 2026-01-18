@@ -34,5 +34,8 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-
+    'huggingface' => [
+        'key' => env('HUGGINGFACE_API_KEY'),
+        'endpoint' => env('HUGGINGFACE_ENDPOINT'),
+    ],
 ];
