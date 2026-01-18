@@ -45,6 +45,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/cookbook/tao-cookbook', [CookbookController::class, 'store']);
 
+
+    // 5. Thêm công thức vào cookbook
+
+
+
+
+
+        // Đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
         // Upload ảnh (Dùng chung cho cả avatar, ảnh bài viết...)
         Route::post('/upload-image', [KhachController::class, 'uploadImage']);

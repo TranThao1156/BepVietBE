@@ -32,4 +32,9 @@ class NguoiDung extends Authenticatable
     {
         return $this->MatKhau;
     }
+
+    public function congThuc()
+    {
+        return $this->hasMany(CongThuc::class, 'Ma_ND');
+    }
 }
