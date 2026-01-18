@@ -9,8 +9,12 @@ use App\Services\BlogService;
 
 class BlogController extends Controller
 {
-    //Thi
-    // Lấy danh sách blog 
+    protected $blogService;
+    public function __construct(BlogService $blogService)
+    {
+        $this->blogService = $blogService;
+    }
+    // Thi - Lấy danh sách blog 
     public function layDSBlog(BlogService $blogService)
     {
         $data = $blogService->layDSBlog();
@@ -20,5 +24,37 @@ class BlogController extends Controller
                 'message' => 'Lấy danh sách blog mới thành công',
                 'data' => $data
         ], 200);
+    }
+    // Thi - Chi tiết blog
+    public function layChiTietBlog(int $id)
+    {
+        $data = $this->blogService->chiTietBlog($id);
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy chi tiết blog thành công',
+            'data' => $data
+        ], 200);
+    }
+    // Thi - Thêm blog
+    public function themBlog(Request $request)
+    {
+        $request->validate([
+            'TieuDe'     => 'required|string|max:255',
+            'ND_ChiTiet' => 'required|string',
+            'HinhAnh'    => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'Ma_ND'      => 'required|integer'
+        ], [
+            'TieuDe.required' => 'Tiêu đề không được để trống',
+            'ND_ChiTiet.required' => 'Nội dung không được để trống',
+            'HinhAnh.required' => 'Vui lòng chọn ảnh',
+        ]);
+
+        $blog = $this->blogService->themBlog($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Blog đã được gửi và đang chờ duyệt',
+            'data' => $blog
+        ], 201);
     }
 }

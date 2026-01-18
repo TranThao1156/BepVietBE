@@ -4,17 +4,11 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\CongThuc;
-<<<<<<< HEAD
 use App\Services\CongThucService;
 use Illuminate\Http\Request;
-
-=======
-use Illuminate\Http\Request;
-use App\Services\CongThucService;
 use Illuminate\Support\Facades\Cache;
 
 // Thảo
->>>>>>> main
 class CongThucController extends Controller
 {
     protected $congThucService;
@@ -23,7 +17,6 @@ class CongThucController extends Controller
     {
         $this->congThucService = $congThucService;
     }
-<<<<<<< HEAD
     // 16/01/2026 Thi tạo API lấy công thức cho trang chủ
     // Lấy danh sách công thức mới nhất (4 món mới nhất)
     public function layDSCongThucMoi()
@@ -62,7 +55,7 @@ class CongThucController extends Controller
             'message' => 'Lấy công thức nổi bật miền ' . $mien . ' thành công',
             'data' => $data
         ], 200);
-=======
+    }
     // Thảo - Lấy danh sách công thức
     public function index(Request $request)
     {
@@ -153,6 +146,6 @@ class CongThucController extends Controller
             'message' => 'Lấy danh sách công thức của bạn thành công',
             'data' => $data
         ]);
->>>>>>> main
     }
 }
+

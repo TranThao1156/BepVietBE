@@ -33,11 +33,10 @@ Route::get('/cong-thuc', [CongThucController::class, 'index']);
 Route::get('/cong-thuc/{id}', [CongThucController::class, 'show']);
 
 
-// Danh sách Blog
-// Thi - Lấy danh sách blog mới nhất (6 bài mới nhất)
-Route::get('/blog', [BlogController::class, 'layDSBlogMoiNhat']);
-// Chi tiết Blog
-
+// Thi - Danh sách Blog
+Route::get('/blog', [BlogController::class, 'layDSBlog']);
+// Thi - Chi tiết Blog
+Route::get('/blog/{id}', [BlogController::class, 'layChiTietBlog']);
 
 // Lấy danh mục để lọc (dùng chung hàm của Admin cũng được)
 
@@ -90,6 +89,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // 3. Quản lý Blog cá nhân
 
+
+    // Thi - Thêm blog
+        Route::post('/them-blog', [BlogController::class, 'themBlog']);
 
 
 
