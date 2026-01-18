@@ -2,7 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\BuocThucHien;
 use App\Models\CongThuc;
+use App\Models\NguyenLieu;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class CongThucService
 {
@@ -47,33 +51,132 @@ class CongThucService
         return $congThuc;
     }
 
-
-
-    public function LayDsCongThucByUser(int $userId, int $limit = 10)
+    public function LayDsCongThucByUser(int $userId, int $limit = 5)
     {
         return CongThuc::where('Ma_ND', $userId)
+            // 1. Chỉ lấy các cột cần thiết
+            ->select('Ma_CT', 'TenMon', 'HinhAnh', 'created_at', 'TrangThaiDuyet', 'Ma_LM', 'Ma_VM')
+
+            // 2. Nạp trước dữ liệu bảng LoaiMon và VungMien để hiển thị (Món nước • Miền Bắc)
+            ->with([
+                'loaiMon:Ma_LM,TenLoaiMon',   // Chỉ lấy cột TenLoaiMon
+                'vungMien:Ma_VM,TenVungMien' // Chỉ lấy cột TenVungMien
+            ])
+
+            // 3. Sắp xếp mới nhất lên đầu
             ->orderByDesc('created_at')
+
+            // 4. Phân trang
             ->paginate($limit);
     }
 
-
     // Thảo - Thêm công thức
-    public function themCongThuc(array $duLieu)
+    public function createCongThuc(Request $request, $user)
     {
-        return CongThuc::create([
-            'TenMon'         => $duLieu['TenMon'],
-            'MoTa'           => $duLieu['MoTa'] ?? null,
-            'KhauPhan'       => $duLieu['KhauPhan'],
-            'DoKho'          => $duLieu['DoKho'],
-            'ThoiGianNau'    => $duLieu['ThoiGianNau'],
-            'HinhAnh'        => $duLieu['HinhAnh'] ?? null,
-            'TrangThaiDuyet' => 0, // mặc định chờ duyệt
-            'SoLuotXem'      => 0,
-            'Ma_VM'          => $duLieu['Ma_VM'] ?? null,
-            'Ma_LM'          => $duLieu['Ma_LM'],
-            'Ma_DM'          => $duLieu['Ma_DM'],
-            'Ma_ND'          => $duLieu['Ma_ND'],
-            'TrangThai'      => 1
-        ]);
+        return DB::transaction(function () use ($request, $user) {
+
+            $congThuc = CongThuc::create([
+                'TenMon' => $request->TenMon,
+                'MoTa' => $request->MoTa,
+                'KhauPhan' => $request->KhauPhan,
+                'DoKho' => $request->DoKho,
+                'ThoiGianNau' => $request->ThoiGianNau,
+                'HinhAnh' => $request->input('HinhAnh') ?? null,
+                'TrangThaiDuyet' => 'Chờ duyệt',
+                'SoLuotXem' => 0,
+                'Ma_VM' => $request->Ma_VM,
+                'Ma_LM' => $request->Ma_LM,
+                'Ma_DM' => $request->Ma_DM,
+                'Ma_ND' => $user->Ma_ND, // ✅ ĐÚNG
+                'TrangThai' => 1
+            ]);
+
+            foreach ($request->NguyenLieu as $nl) {
+
+                // 1. Tạo hoặc lấy nguyên liệu
+                $nguyenLieu = NguyenLieu::firstOrCreate(
+                    ['TenNguyenLieu' => $nl['TenNguyenLieu']],
+                    ['DonViDo' => $nl['DonViDo']]
+                );
+
+                // 2. Gắn vào công thức
+                DB::table('nl_cthuc')->insert([
+                    'Ma_CT' => $congThuc->Ma_CT,
+                    'Ma_NL' => $nguyenLieu->Ma_NL,
+                    'DinhLuong' => $nl['DinhLuong']
+                ]);
+            }
+
+            foreach ($request->BuocThucHien as $buoc) {
+                BuocThucHien::create([
+                    'Ma_CT' => $congThuc->Ma_CT,
+                    'STT' => $buoc['STT'],
+                    'NoiDung' => $buoc['NoiDung'],
+                    'HinhAnh' => $buoc['HinhAnh'] ?? null
+                ]);
+            }
+            return $congThuc;
+        });
+    }
+
+    // Thảo - Sửa công thức
+    public function updateCongThuc($id, Request $request, $user)
+    {
+        return DB::transaction(function () use ($id, $request, $user) {
+            $congThuc = CongThuc::where('Ma_CT', $id)
+                                ->where('Ma_ND', $user->Ma_ND)
+                                ->firstOrFail();
+
+            // 1. Cập nhật thông tin chính
+            $dataUpdate = [
+                'TenMon' => $request->TenMon,
+                'MoTa' => $request->MoTa,
+                'KhauPhan' => $request->KhauPhan,
+                'DoKho' => $request->DoKho,
+                'ThoiGianNau' => $request->ThoiGianNau,
+                'Ma_VM' => $request->Ma_VM,
+                'Ma_LM' => $request->Ma_LM,
+                'Ma_DM' => $request->Ma_DM,
+                // Nếu User sửa lại thì trạng thái quay về chờ duyệt
+                'TrangThaiDuyet' => 'Chờ duyệt', 
+            ];
+
+            // Chỉ cập nhật ảnh bìa nếu có ảnh mới gửi lên (đã xử lý ở Controller)
+            if ($request->input('HinhAnh')) {
+                $dataUpdate['HinhAnh'] = $request->input('HinhAnh');
+            }
+
+            $congThuc->update($dataUpdate);
+
+            // 2. Xử lý Nguyên Liệu: Xóa hết cũ -> Tạo lại mới
+            DB::table('nl_cthuc')->where('Ma_CT', $id)->delete();
+            
+            foreach ($request->NguyenLieu as $nl) {
+                $nguyenLieu = NguyenLieu::firstOrCreate(
+                    ['TenNguyenLieu' => $nl['TenNguyenLieu']],
+                    ['DonViDo' => $nl['DonViDo']]
+                );
+
+                DB::table('nl_cthuc')->insert([
+                    'Ma_CT' => $congThuc->Ma_CT,
+                    'Ma_NL' => $nguyenLieu->Ma_NL,
+                    'DinhLuong' => $nl['DinhLuong']
+                ]);
+            }
+
+            // 3. Xử lý Bước Thực Hiện: Xóa hết cũ -> Tạo lại mới
+            BuocThucHien::where('Ma_CT', $id)->delete();
+
+            foreach ($request->BuocThucHien as $buoc) {
+                BuocThucHien::create([
+                    'Ma_CT' => $congThuc->Ma_CT,
+                    'STT' => $buoc['STT'],
+                    'NoiDung' => $buoc['NoiDung'],
+                    'HinhAnh' => $buoc['HinhAnh'] ?? null
+                ]);
+            }
+
+            return $congThuc;
+        });
     }
 }
