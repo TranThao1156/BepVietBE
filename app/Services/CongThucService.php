@@ -33,14 +33,15 @@ class CongThucService
         ])->findOrFail($maCT);
 
         // Lấy món liên quan
-        $monLienQuan = CongThuc::where('Ma_CT', '!=', $maCT)
+        $monLienQuan = CongThuc::select('Ma_CT', 'TenMon', 'HinhAnh', 'Ma_ND', 'SoLuotXem')
+            ->where('Ma_CT', '!=', $maCT)
             ->where('TrangThai', 1)
             ->where('TrangThaiDuyet', 'Chấp nhận')
             ->where(function ($q) use ($congThuc) {
                 $q->where('Ma_LM', $congThuc->Ma_LM)
                     ->orWhere('Ma_VM', $congThuc->Ma_VM);
             })
-            ->with('nguoidung')
+            ->with('nguoidung:Ma_ND,HoTen,AnhDaiDien')
             ->orderByDesc('SoLuotXem')
             ->limit(4)
             ->get();
@@ -51,6 +52,7 @@ class CongThucService
         return $congThuc;
     }
 
+    // Thảo - Lấy danh sách công thức bởi người dùng
     public function LayDsCongThucByUser(int $userId, int $limit = 5)
     {
         return CongThuc::where('Ma_ND', $userId)
@@ -124,22 +126,21 @@ class CongThucService
     {
         return DB::transaction(function () use ($id, $request, $user) {
             $congThuc = CongThuc::where('Ma_CT', $id)
-                                ->where('Ma_ND', $user->Ma_ND)
-                                ->firstOrFail();
+                ->where('Ma_ND', $user->Ma_ND)
+                ->firstOrFail();
 
-            // 1. Cập nhật thông tin chính
-            $dataUpdate = [
-                'TenMon' => $request->TenMon,
-                'MoTa' => $request->MoTa,
-                'KhauPhan' => $request->KhauPhan,
-                'DoKho' => $request->DoKho,
-                'ThoiGianNau' => $request->ThoiGianNau,
-                'Ma_VM' => $request->Ma_VM,
-                'Ma_LM' => $request->Ma_LM,
-                'Ma_DM' => $request->Ma_DM,
-                // Nếu User sửa lại thì trạng thái quay về chờ duyệt
-                'TrangThaiDuyet' => 'Chờ duyệt', 
-            ];
+            // Cập nhật thông tin chính
+            $dataUpdate = $request->only([
+                'TenMon',
+                'MoTa',
+                'KhauPhan',
+                'DoKho',
+                'ThoiGianNau',
+                'Ma_VM',
+                'Ma_LM',
+                'Ma_DM'
+            ]);
+            $dataUpdate['TrangThaiDuyet'] = 'Chờ duyệt';
 
             // Chỉ cập nhật ảnh bìa nếu có ảnh mới gửi lên (đã xử lý ở Controller)
             if ($request->input('HinhAnh')) {
@@ -148,32 +149,39 @@ class CongThucService
 
             $congThuc->update($dataUpdate);
 
-            // 2. Xử lý Nguyên Liệu: Xóa hết cũ -> Tạo lại mới
+            // Xử lý Nguyên Liệu (Xóa cũ -> Thêm mới bulk insert)
             DB::table('nl_cthuc')->where('Ma_CT', $id)->delete();
-            
+
+            $nlPivotData = [];
             foreach ($request->NguyenLieu as $nl) {
                 $nguyenLieu = NguyenLieu::firstOrCreate(
                     ['TenNguyenLieu' => $nl['TenNguyenLieu']],
                     ['DonViDo' => $nl['DonViDo']]
                 );
-
-                DB::table('nl_cthuc')->insert([
+                $nlPivotData[] = [
                     'Ma_CT' => $congThuc->Ma_CT,
                     'Ma_NL' => $nguyenLieu->Ma_NL,
                     'DinhLuong' => $nl['DinhLuong']
-                ]);
+                ];
+            }
+            if (!empty($nlPivotData)) {
+                DB::table('nl_cthuc')->insert($nlPivotData);
             }
 
-            // 3. Xử lý Bước Thực Hiện: Xóa hết cũ -> Tạo lại mới
+            // Xử lý Bước Thực Hiện (Xóa cũ -> Thêm mới bulk insert)
             BuocThucHien::where('Ma_CT', $id)->delete();
 
+            $buocData = [];
             foreach ($request->BuocThucHien as $buoc) {
-                BuocThucHien::create([
+                $buocData[] = [
                     'Ma_CT' => $congThuc->Ma_CT,
                     'STT' => $buoc['STT'],
                     'NoiDung' => $buoc['NoiDung'],
                     'HinhAnh' => $buoc['HinhAnh'] ?? null
-                ]);
+                ];
+            }
+            if (!empty($buocData)) {
+                BuocThucHien::insert($buocData);
             }
 
             return $congThuc;
