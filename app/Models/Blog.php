@@ -31,18 +31,8 @@ class Blog extends Model
     }
     public function binhLuan()
     {
-        return $this->hasMany(BinhLuan::class, 'Ma_Blog', 'Ma_Blog');
-    }
-    // Thi 
-    // Tự tạo slug khi tạo mới
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($blog) {
-            $blog->Slug = Str::slug($blog->TieuDe) . '-' . time();
-            $blog->TrangThaiDuyet = 'cho_duyet';
-        });
+        return $this->hasMany(BinhLuan::class, 'Ma_Blog', 'Ma_Blog')
+        ->where('TrangThai', 1);
     }
     
 }

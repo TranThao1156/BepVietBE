@@ -33,27 +33,65 @@ public function layDSBlog()
     } 
 
     // Thi - Chi tiết blog
-    public function chiTietBlog(int $maBlog)
-    {
-        $blog = Blog::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
-            ->where('TrangThai', 1)
-            ->where('TrangThaiDuyet', 'Chấp nhận')
-            ->findOrFail($maBlog);
+        public function chiTietBlog(int $maBlog)
+        {
+            $blog = Blog::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien,Email,GioiTinh'])
+                ->where('TrangThai', 1)
+                ->where('TrangThaiDuyet', 'Chấp nhận')
+                ->findOrFail($maBlog);
 
-        return [
-            'Ma_Blog'   => $blog->Ma_Blog,
-            'TieuDe'    => $blog->TieuDe,
-            'Slug'      => Str::slug($blog->TieuDe) . '-' . $blog->Ma_Blog,
-            'ND_ChiTiet'=> $blog->ND_ChiTiet, // chi tiết đầy đủ
-            'HinhAnh'   => $blog->HinhAnh,
-            'NgayDang'  => $blog->created_at,
-            'TacGia'    => [
-                'Ma_ND'      => $blog->nguoiDung->Ma_ND ?? null,
-                'HoTen'      => $blog->nguoiDung->HoTen ?? '',
-                'AnhDaiDien' => $blog->nguoiDung->AnhDaiDien ?? 'avatar.png'
-            ]
-        ];
-    }
+            // Thi - Lấy Blog liên quan (cùng tác giả)
+            $blogLienQuan = Blog::where('Ma_Blog', '!=', $maBlog)
+                ->where('Ma_ND', $blog->Ma_ND)
+                ->where('TrangThai', 1)
+                ->where('TrangThaiDuyet', 'Chấp nhận')
+                ->orderByDesc('created_at')
+                ->limit(4)
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'Ma_Blog'  => $item->Ma_Blog,
+                        'TieuDe'   => $item->TieuDe,
+                        'Slug'     => Str::slug($item->TieuDe) . '-' . $item->Ma_Blog,
+                        'HinhAnh'  => $item->HinhAnh,
+                        'NgayDang' => $item->created_at
+                    ];
+                });
+            // Lấy Bình thông tin bình luận
+            $binhLuan = $blog->binhLuan->map(function ($item) {
+                return [
+                    'Ma_BL'     => $item->Ma_BL,
+                    'NoiDungBL' => $item->NoiDungBL,
+                    'LoaiBL'    => $item->LoaiBL,
+                    'NgayBL'    => $item->created_at,
+                    'NguoiDung' => [
+                        'Ma_ND'      => $item->nguoiDung->Ma_ND ?? null,
+                        'HoTen'      => $item->nguoiDung->HoTen ?? '',
+                        'AnhDaiDien' => $item->nguoiDung->AnhDaiDien ?? 'avatar.png',
+                    ]
+                ];
+            });
+            return [
+                'Ma_Blog'   => $blog->Ma_Blog,
+                'TieuDe'    => $blog->TieuDe,
+                'Slug'      => Str::slug($blog->TieuDe) . '-' . $blog->Ma_Blog,
+                'ND_ChiTiet'=> $blog->ND_ChiTiet, // chi tiết đầy đủ
+                'HinhAnh'   => $blog->HinhAnh,
+                'NgayDang'  => $blog->created_at,
+                'TacGia'    => [
+                    'Ma_ND'      => $blog->nguoiDung->Ma_ND ?? null,
+                    'HoTen'      => $blog->nguoiDung->HoTen ?? '',
+                    'AnhDaiDien' => $blog->nguoiDung->AnhDaiDien ?? 'avatar.png',
+                    'Email'      => $blog->nguoiDung->Email ?? '',
+                    'GioiTinh'   => $blog->nguoiDung->GioiTinh ?? '',
+                ],
+                'SoBinhLuan' => $blog->binhLuan->count(),
+                // Gắn thêm blog liên quan
+                'BlogLienQuan' => $blogLienQuan,
+                // Gắn thêm bình luận
+                'BinhLuan'     => $binhLuan
+            ];
+        }
     
     // Thi Thêm Blog
     public function themBlog(array $duLieu)
