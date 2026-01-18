@@ -2,25 +2,49 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
+
 
 class Blog extends Model
 {
+    // 17/01/2026 Thi tạo model Blog
     use HasFactory;
 
-    protected $table = 'blog'; 
-    protected $primaryKey = 'Ma_Blog'; // Quan trọng: Khai báo khóa chính theo DB
-    
-    // Nếu bảng không có created_at, updated_at thì set false
-    // public $timestamps = false; 
+    protected $table = 'blog'; // đổi nếu tên bảng khác
+
+    protected $primaryKey = 'Ma_Blog';
+
+    public $timestamps = true;
 
     protected $fillable = [
         'Ma_ND',
         'TieuDe',
         'ND_ChiTiet',
         'HinhAnh',
-        'TrangThaiDuyet', // Cột Service sẽ update
+        'TrangThaiDuyet',
         'TrangThai'
     ];
+    // Quan hệ với người dùng (User)
+    public function nguoiDung()
+    {
+        return $this->belongsTo(NguoiDung::class, 'Ma_ND', 'Ma_ND');
+    }
+    public function binhLuan()
+    {
+        return $this->hasMany(BinhLuan::class, 'Ma_Blog', 'Ma_Blog');
+    }
+    // Thi 
+    // Tự tạo slug khi tạo mới
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($blog) {
+            $blog->Slug = Str::slug($blog->TieuDe) . '-' . time();
+            $blog->TrangThaiDuyet = 'cho_duyet';
+        });
+    }
+    
 }

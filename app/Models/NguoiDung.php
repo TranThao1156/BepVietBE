@@ -13,7 +13,7 @@ class NguoiDung extends Authenticatable
     protected $table = 'nguoidung';
     protected $primaryKey = 'Ma_ND';
     public $timestamps = true;
-    
+
     protected $fillable = [
         'TenTK',
         'MatKhau',
@@ -38,4 +38,8 @@ class NguoiDung extends Authenticatable
         return $this->hasMany(CongThuc::class, 'Ma_ND');
     }
     
+    public function blog()
+    {
+        return $this->hasMany(Blog::class, 'Ma_ND', 'Ma_ND');
+    }
 }
