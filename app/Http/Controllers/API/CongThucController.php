@@ -3,18 +3,15 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\BuocThucHien;
 use App\Models\CongThuc;
 use App\Models\DanhMuc;
 use App\Models\LoaiMon;
-use App\Models\NguyenLieu;
 use App\Models\VungMien;
 use Illuminate\Http\Request;
 use App\Services\CongThucService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-// Thảo
 class CongThucController extends Controller
 {
     protected $congThucService;
@@ -54,8 +51,7 @@ class CongThucController extends Controller
     {
         if ($request->hasFile($fieldName)) {
             $file = $request->file($fieldName);
-            // Tạo tên file an toàn: time + slug tên gốc + đuôi file
-            // Ví dụ: "Sushi Ngon.jpg" -> "170568999_sushi-ngon.jpg"
+
             $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
 
             $file->storeAs($folder, $filename, 'public');
@@ -79,6 +75,20 @@ class CongThucController extends Controller
             'message' => 'Lấy danh sách công thức thành công',
             'data'    => $duLieu
         ]);
+    }
+
+    // Thảo - Gợi ý nguyên liệu
+    public function goiYNguyenLieu(Request $request)
+    {
+        $keyword = $request->get('q'); // Lấy từ khóa từ ?q=thit
+
+        if (!$keyword) {
+            return response()->json([]);
+        }
+
+        $data = $this->congThucService->timKiemNguyenLieu($keyword);
+
+        return response()->json($data);
     }
 
     // Thảo - Thêm công thức
@@ -109,12 +119,8 @@ class CongThucController extends Controller
     public function show($id, Request $request)
     {
         $congThuc = $this->congThucService->chiTietCongThuc($id);
-        $key = 'view_ct_' . $id . '_' . request()->ip();
-        if (!Cache::has($key)) {
-            CongThuc::where('Ma_CT', $id)->increment('SoLuotXem');
-            // Hết 10p thì được +1 lượt xem
-            Cache::put($key, true, now()->addMinutes(10));
-        }
+        $this->congThucService->tangLuotXem($id, $request);
+
         return response()->json([
             'message' => 'Lấy chi tiết công thức thành công',
             'data' => $congThuc
@@ -128,7 +134,7 @@ class CongThucController extends Controller
         $user = $request->user();
 
         if (!$user) {
-            return response()->json(['message' => 'Bạn chưa đăng nhập'], 401);
+            return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
         // Lấy tham số limit từ URL (ví dụ ?limit=10), mặc định là 5
@@ -158,32 +164,35 @@ class CongThucController extends Controller
         ]);
     }
 
+    // Thảo - Upload ảnh các bước (Không trùng ảnh)
     public function uploadAnhBuoc(Request $request)
     {
-        // Validate mảng hình ảnh
+        // 1. Chỉ nhận 1 file (name là 'image')
         $request->validate([
-            'images' => 'required|array',
-            'images.*' => 'image|max:5120' // Mỗi ảnh max 5MB
+            'image' => 'required|image|max:5120' // Max 5MB
         ]);
 
-        $uploadedFiles = [];
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
 
-        if ($request->hasFile('images')) {
-            // Thêm $index để đảm bảo không trùng lặp dù chạy cực nhanh
-            foreach ($request->file('images') as $index => $file) {
+            // 2. Tạo tên file dựa trên nội dung ảnh (MD5 Hash)
+            // Cách này đảm bảo 100% không bao giờ lưu 2 ảnh giống hệt nhau
+            $md5Hash = md5_file($file->getRealPath());
+            $extension = $file->getClientOriginalExtension();
+            $filename = $md5Hash . '.' . $extension;
 
-                $nameSlug = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-                $extension = $file->getClientOriginalExtension();
+            $path = 'img/BuocThucHien/' . $filename;
 
-                $filename = time() . '_' . uniqid() . '_' . $nameSlug . '.' . $extension;
-
+            // 3. Kiểm tra nếu ảnh này đã có trên server chưa
+            if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+                // Nếu chưa có thì mới lưu
                 $file->storeAs('img/BuocThucHien', $filename, 'public');
-                $uploadedFiles[] = $filename;
             }
 
+            // Trả về 1 tên file duy nhất
             return response()->json([
                 'success' => true,
-                'images' => $uploadedFiles,
+                'image' => $filename,
             ]);
         }
 
@@ -210,6 +219,25 @@ class CongThucController extends Controller
             return response()->json(['success' => true, 'message' => 'Cập nhật thành công', 'data' => $congThuc]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Lỗi: ' . $e->getMessage()], 500);
+        }
+    }
+
+
+    // Thảo - Xóa công thức
+    public function xoaCongThuc($id, Request $request)
+    {
+        try {
+            $user = $request->user(); // đã qua auth middleware
+            $this->congThucService->xoaCongThuc($id, $user);
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xóa công thức thành công'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 403);
         }
     }
 }

@@ -29,6 +29,8 @@ Route::get('/cong-thuc/{id}', [CongThucController::class, 'show']);
 
 Route::get('/tuy-chon-cong-thuc', [CongThucController::class, 'layTuyChon']);
 
+Route::get('/nguyen-lieu/goi-y', [CongThucController::class, 'goiYNguyenLieu']);
+
 Route::post('/upload-anh-buoc', [CongThucController::class, 'uploadAnhBuoc']);
 // 2. PROTECTED ROUTES (YÊU CẦU ĐĂNG NHẬP - Token)
 
@@ -40,10 +42,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // ----------------------------------------------------------------
     Route::prefix('admin')->middleware('role:0')->group(function () {
 
+
     });
-
-
-    // B. NHÓM API NGƯỜI DÙNG (Cả admin và user đều có quyền sử dụng các chức năng trên)
 
     Route::prefix('user')->middleware('role:1,0')->group(function () {
         // Thảo - Thêm công thức
@@ -54,6 +54,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Thảo - Sửa công thức
         Route::post('/cong-thuc/sua-cong-thuc/{Ma_CT}', [CongThucController::class, 'suaCongThuc']);
+
+        // Thảo - Xóa công thức
+        Route::post('/cong-thuc/xoa-cong-thuc/{Ma_CT}', [CongThucController::class, 'xoaCongThuc']);
 
         //Khôi
         Route::post('/cookbook/tao-cookbook', [CookbookController::class, 'store']);
