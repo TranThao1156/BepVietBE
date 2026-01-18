@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
    // Đặt tên alias cho middleware
         $middleware->alias([
             'vaitro' => KiemTraVaiTro::class,
+            
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

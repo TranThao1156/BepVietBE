@@ -37,4 +37,6 @@ class CongThuc extends Model
     public function danh_muc() {
         return $this->belongsTo(DanhMuc::class, 'Ma_DM', 'Ma_DM');
     }
+
+    
 }
