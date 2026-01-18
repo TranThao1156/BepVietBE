@@ -36,6 +36,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('danh-muc', [DanhMucController::class, 'index']);
         Route::post('danh-muc/tao-danh-muc', [DanhMucController::class, 'store']);
         Route::delete('danh-muc/{id}', [DanhMucController::class, 'destroy']);
+        Route::get('danh-muc/sua-danh-muc/{id}', [DanhMucController::class, 'show']);
+        Route::put('danh-muc/sua-danh-muc/{id}', [DanhMucController::class, 'update']);
 
     });
     // B. NHÓM API NGƯỜI DÙNG (Cả admin và user đều có quyền sử dụng các chức năng trên)

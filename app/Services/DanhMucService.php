@@ -29,6 +29,10 @@ class DanhMucService
         ]);
     }
 
+    public function getDetail($id)
+    {
+        return DanhMuc::findOrFail($id);
+    }
     /**
      * Cập nhật danh mục
      */
@@ -36,8 +40,13 @@ class DanhMucService
     {
         $danhMuc = DanhMuc::findOrFail($id);
         
-        // Chỉ cập nhật các trường có gửi lên
-        $danhMuc->fill($data);
+        // Dùng fill để gán dữ liệu, chỉ những trường nào có gửi lên mới update
+        $danhMuc->fill([
+            'TenDM'     => $data['TenDM'] ?? $danhMuc->TenDM,
+            'LoaiDM'    => $data['LoaiDM'] ?? $danhMuc->LoaiDM,
+            'TrangThai' => $data['TrangThai'] ?? $danhMuc->TrangThai,
+        ]);
+        
         $danhMuc->save();
         
         return $danhMuc;
