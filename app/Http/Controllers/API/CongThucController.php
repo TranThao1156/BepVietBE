@@ -11,7 +11,7 @@ use App\Services\CongThucService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
-
+use App\Models\BinhLuan;
 class CongThucController extends Controller
 {
     protected $congThucService;
@@ -62,24 +62,24 @@ class CongThucController extends Controller
     // Thi - Lấy danh sách công thức mới nhất (4 món mới nhất)
     public function layDSCongThucMoi()
     {
-            $data = $this->congThucService->layDSCongThucMoi();
+        $data = $this->congThucService->layDSCongThucMoi();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Lấy danh sách món mới thành công',
-                'data' => $data
-            ], 200);
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy danh sách món mới thành công',
+            'data' => $data
+        ], 200);
     }
     // Lấy danh sách công thức được xem nhiều nhất (4 món nổi bật)
     public function layDSCongThucNoiBat()
     {
-            $data = $this->congThucService->layDSCongThucNoiBat();
+        $data = $this->congThucService->layDSCongThucNoiBat();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Lấy danh sách món nổi bật thành công',
-                'data' => $data
-            ], 200);
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy danh sách món nổi bật thành công',
+            'data' => $data
+        ], 200);
     }
     // Hiển thị 1 công thức nổi bật theo vùng miền ( miền bắc, miền trung, miền nam )
     public function layCongThucNoiBatTheoMien(string $mien)
@@ -278,5 +278,34 @@ class CongThucController extends Controller
             ], 403);
         }
     }
-}
+    //Khanh - Hiển thị bình luận công thức
+    public function showBinhLuan($id)
+    {
+        try {
+            // Kiểm tra công thức tồn tại
+            $congThuc = CongThuc::find($id);
 
+            if (!$congThuc) {
+                return response()->json([
+                    'message' => 'Không tìm thấy công thức'
+                ], 404);
+            }
+
+            // Lấy danh sách bình luận
+            $binhLuan = BinhLuan::where('Ma_CT', $id)
+                ->with('nguoiDung')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'message' => 'Lấy bình luận thành công',
+                'data' => $binhLuan
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Lỗi server',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+}

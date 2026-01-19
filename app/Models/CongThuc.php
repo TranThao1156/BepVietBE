@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class CongThuc extends Model
 {
     use HasFactory;
-//Thảo 
+    //Thảo 
     protected $table = 'congthuc';
     public $timestamps = true;
     public $incrementing = true;
@@ -38,18 +38,21 @@ class CongThuc extends Model
         return $this->belongsTo(NguoiDung::class, 'Ma_ND', 'Ma_ND');
     }
 
-    public function vungMien() {
+    public function vungMien()
+    {
         return $this->belongsTo(VungMien::class, 'Ma_VM', 'Ma_VM');
     }
 
-    public function loaiMon() {
+    public function loaiMon()
+    {
         return $this->belongsTo(LoaiMon::class, 'Ma_LM', 'Ma_LM');
     }
 
-    public function danhMuc() {
+    public function danhMuc()
+    {
         return $this->belongsTo(DanhMuc::class, 'Ma_DM', 'Ma_DM');
     }
-    
+
     public function danhGia()
     {
         return $this->hasMany(DanhGia::class, 'Ma_CT', 'Ma_CT');
@@ -72,5 +75,9 @@ class CongThuc extends Model
             'Ma_CT',
             'Ma_CT'
         )->orderBy('STT');
+    }
+    public function binh_luan()
+    {
+        return $this->hasMany(BinhLuan::class, 'Ma_CT', 'Ma_CT');
     }
 }
