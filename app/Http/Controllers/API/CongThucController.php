@@ -62,24 +62,24 @@ class CongThucController extends Controller
     // Thi - Lấy danh sách công thức mới nhất (4 món mới nhất)
     public function layDSCongThucMoi()
     {
-            $data = $this->congThucService->layDSCongThucMoi();
+        $data = $this->congThucService->layDSCongThucMoi();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Lấy danh sách món mới thành công',
-                'data' => $data
-            ], 200);
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy danh sách món mới thành công',
+            'data' => $data
+        ], 200);
     }
     // Lấy danh sách công thức được xem nhiều nhất (4 món nổi bật)
     public function layDSCongThucNoiBat()
     {
-            $data = $this->congThucService->layDSCongThucNoiBat();
+        $data = $this->congThucService->layDSCongThucNoiBat();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Lấy danh sách món nổi bật thành công',
-                'data' => $data
-            ], 200);
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy danh sách món nổi bật thành công',
+            'data' => $data
+        ], 200);
     }
     // Hiển thị 1 công thức nổi bật theo vùng miền ( miền bắc, miền trung, miền nam )
     public function layCongThucNoiBatTheoMien(string $mien)
@@ -158,6 +158,12 @@ class CongThucController extends Controller
     {
         $congThuc = $this->congThucService->chiTietCongThuc($id);
         $this->congThucService->tangLuotXem($id, $request);
+
+        $user = $request->user('sanctum'); // Kiểm tra user token
+
+        if ($user) {
+            $this->congThucService->ghiNhanLichSuXem($user->Ma_ND, $id);
+        }
 
         return response()->json([
             'message' => 'Lấy chi tiết công thức thành công',
@@ -278,5 +284,28 @@ class CongThucController extends Controller
             ], 403);
         }
     }
-}
 
+    // Thảo - Lấy danh sách công thức đã xem
+    public function layDsDaXem(Request $request)
+    {
+        $user = $request->user(); // Đã qua middleware auth:sanctum
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        try {
+            $data = $this->congThucService->layLichSuXemCuaUser($user->Ma_ND, 10);
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi lấy lịch sử: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+}

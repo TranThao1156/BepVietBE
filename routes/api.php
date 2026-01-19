@@ -23,8 +23,11 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // 16/01/2026 - Thi - công thức cho trang chủ
 Route::get('/cong-thuc/mon-moi', [CongThucController::class, 'layDSCongThucMoi']);
+
 Route::get('/cong-thuc/mon-noi-bat', [CongThucController::class, 'layDSCongThucNoiBat']);
+
 Route::get('/cong-thuc/mien-noi-bat/{mien}', [CongThucController::class, 'layCongThucNoiBatTheoMien']);
+
 // Thảo - danh sách công thức
 Route::get('/cong-thuc', [CongThucController::class, 'index']);
 
@@ -41,6 +44,8 @@ Route::post('/ai-chat', [AIChatController::class, 'chat']);
 
 // Thi - Danh sách Blog
 Route::get('/blog', [BlogController::class, 'layDSBlog']);
+
+
 // Thi - Chi tiết Blog
 Route::get('/blog/{id}', [BlogController::class, 'layChiTietBlog']);
 
@@ -73,6 +78,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // B. NHÓM API NGƯỜI DÙNG (Cả admin và user đều có quyền sử dụng các chức năng trên)
 
     Route::prefix('user')->middleware('role:1,0')->group(function () {
+
+        // Công thức
         // Thảo - Thêm công thức
         Route::post('cong-thuc/them-cong-thuc', [CongThucController::class, 'themCongThuc']);
 
@@ -85,10 +92,19 @@ Route::middleware('auth:sanctum')->group(function () {
         // Thảo - Xóa công thức
         Route::post('/cong-thuc/xoa-cong-thuc/{Ma_CT}', [CongThucController::class, 'xoaCongThuc']);
 
-        // 2. Quản lý Công thức cá nhân (My Recipes)
+        // Thảo - Lịch sử công thức đã xem
+        Route::get('/cong-thuc/lich-su-xem', [CongThucController::class, 'layDsDaXem']);
+
+        // Người dùng
+
+        // Thảo - Xem hồ sơ cá nhân
+        Route::get('/ho-so', [NguoiDungController::class, 'layThongTinCaNhan']);
+
+        // Thảo - Cập nhật hồ sơ cá nhân
+        Route::post('/ho-so/cap-nhat', [NguoiDungController::class, 'capNhatHoSo']);
 
 
-        // 3. Quản lý Blog cá nhân
+        // Quản lý Blog cá nhân
 
         // Thi - Thêm blog
         Route::post('/them-blog', [BlogController::class, 'themBlog']);

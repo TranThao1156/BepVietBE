@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\BuocThucHien;
@@ -8,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use App\Models\NguoiDung;
 
 class CongThucService
 {
@@ -17,7 +19,7 @@ class CongThucService
     {
         return CongThuc::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
             ->where('TrangThai', 1)
-            -> where('TrangThaiDuyet', "Chấp nhận")
+            ->where('TrangThaiDuyet', "Chấp nhận")
             ->orderBy('created_at', 'desc')
             ->take(4)
             ->get();
@@ -27,7 +29,7 @@ class CongThucService
     {
         return CongThuc::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
             ->where('TrangThai', 1)
-            -> where('TrangThaiDuyet', "Chấp nhận")
+            ->where('TrangThaiDuyet', "Chấp nhận")
             ->orderBy('SoLuotXem', 'desc')
             ->take(4)
             ->get();
@@ -54,13 +56,14 @@ class CongThucService
     //Thảo - Ds công thức
     public function layDanhSachCongThuc(array $boLoc = [])
     {
-        $query = CongThuc::query()
-            ->with(['nguoidung', 'danh_muc'])
-            ->where('TrangThai', 1)
-            ->where('TrangThaiDuyet', "Chấp nhận");
+        return Cache::remember('home_mon_moi', 600, function () {
+            $query = CongThuc::query()
+                ->with(['nguoiDung', 'danhMuc'])
+                ->where('TrangThai', 1)
+                ->where('TrangThaiDuyet', "Chấp nhận");
 
-        // Phân trang
-        return $query->paginate($boLoc['limit'] ?? 6);
+            return $query->paginate($boLoc['limit'] ?? 6);
+        });
     }
 
     // Thảo - Chi tiết công thức
@@ -149,7 +152,7 @@ class CongThucService
                 'TrangThai' => 1
             ]);
 
-            // --- LOGIC QUAN TRỌNG: Thêm nguyên liệu ---
+            // Thêm nguyên liệu
             foreach ($request->NguyenLieu as $nl) {
                 $tenChuanHoa = Str::ucfirst(Str::lower(trim(preg_replace('/\s+/', ' ', $nl['TenNguyenLieu']))));
                 $donViChuanHoa = Str::lower(trim($nl['DonViDo']));
@@ -288,5 +291,43 @@ class CongThucService
         $congThuc->save();
 
         return true;
+    }
+
+    // Thảo - Ghi nhận lịch sử xem
+    public function ghiNhanLichSuXem(int $userId, int $maCT)
+    {
+        // Tên bảng là 'lichsuxem' (không có gạch dưới giữa lich và su)
+        DB::table('lichsuxem')->updateOrInsert(
+            [
+                'Ma_ND' => $userId,
+                'Ma_CT' => $maCT
+            ],
+            [
+                'ThoiGianXem' => now(),
+            ]
+        );
+    }
+
+    // Thảo - Lấy lịch sử xem
+    public function layLichSuXemCuaUser(int $userId, int $limit = 10)
+    {
+        return DB::table('lichsuxem') // Tên bảng: lichsuxem
+            ->join('congthuc', 'lichsuxem.Ma_CT', '=', 'congthuc.Ma_CT')
+            ->join('nguoidung', 'congthuc.Ma_ND', '=', 'nguoidung.Ma_ND')
+            ->where('lichsuxem.Ma_ND', $userId)
+            ->where('congthuc.TrangThai', 1)
+            ->orderByDesc('lichsuxem.ThoiGianXem')
+            ->limit($limit)
+            ->select(
+                'congthuc.Ma_CT',
+                'congthuc.TenMon',
+                'congthuc.HinhAnh',
+                'congthuc.ThoiGianNau',
+                'congthuc.DoKho',
+                'congthuc.TrangThaiDuyet',
+                'nguoidung.HoTen as TenTacGia',
+                'lichsuxem.ThoiGianXem as NgayXem' // Alias để frontend dễ dùng
+            )
+            ->get();
     }
 }
