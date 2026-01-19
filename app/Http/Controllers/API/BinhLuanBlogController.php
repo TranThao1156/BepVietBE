@@ -1,0 +1,68 @@
+<?php
+
+namespace App\Http\Controllers\API;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Services\BinhLuanBlogService;
+use Illuminate\Support\Facades\Validator;
+
+class BinhLuanBlogController extends Controller
+{
+    protected $service;
+
+    public function __construct(BinhLuanBlogService $service)
+    {
+        $this->service = $service;
+    }
+
+    // API Thêm
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'Ma_Blog'   => 'required|integer',
+            'NoiDungBL' => 'required|string|min:3',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $data = $this->service->themBinhLuan($request->all());
+            return response()->json(['success' => true, 'message' => 'Đã gửi bình luận', 'data' => $data]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // API Sửa
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'NoiDungBL' => 'required|string|min:3',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $data = $this->service->suaBinhLuan($id, $request->NoiDungBL);
+            return response()->json(['success' => true, 'message' => 'Đã sửa bình luận', 'data' => $data]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // API Xóa
+    public function destroy($id)
+    {
+        try {
+            $this->service->xoaBinhLuan($id);
+            return response()->json(['success' => true, 'message' => 'Đã xóa bình luận']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+}

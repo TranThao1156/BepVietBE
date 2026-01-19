@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\CongThucController;
 use App\Http\Controllers\API\TimKiemController; // Import TimKiemController - Trâm
 use App\Http\Controllers\API\DoiMatKhauController; // Import DoiMatKhauController - Trâm
+use App\Http\Controllers\API\BinhLuanBlogController; // Import BinhLuanBlogController - Trâm
 
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CookbookController;
@@ -131,7 +132,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
         //Trâm - Các API yêu cầu phải đăng nhập mới dùng được
         Route::post('/doi-mat-khau', [DoiMatKhauController::class, 'doiMatKhau']);
-
+ 
+        // Trâm - API Bình luận Blog
+        Route::post('/binh-luan-blog', [BinhLuanBlogController::class, 'store']);
+        Route::put('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'update']);
+        Route::delete('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'destroy']);
         
     });
 });
