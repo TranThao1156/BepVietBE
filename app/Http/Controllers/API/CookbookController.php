@@ -228,4 +228,47 @@ class CookbookController extends Controller
             return response()->json(['success' => false, 'message' => 'Lỗi: ' . $e->getMessage()], 500);
         }
     }
+    public function update(Request $request, $id)
+    {
+        // 1. Validate (Cho phép tên và ảnh)
+        $validator = Validator::make($request->all(), [
+            'TenCookBook' => 'required|string|max:255',
+            'AnhBia'      => 'nullable|image|max:2048', // Ảnh tối đa 2MB
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        $user = auth('sanctum')->user();
+        if (!$user) return response()->json(['message' => 'Chưa đăng nhập'], 401);
+
+        // 2. Gọi Service
+        // Chú ý: $request->file('AnhBia') sẽ lấy file thật
+        $updatedCookbook = $this->cookbookService->capNhatCookbook(
+            $id,
+            $request->all(),
+            $request->file('AnhBia'), // Truyền file ảnh riêng
+            $user->Ma_ND
+        );
+
+        if ($updatedCookbook) {
+            // Xử lý link ảnh để trả về frontend hiển thị ngay
+            $anhBiaUrl = $updatedCookbook->AnhBia;
+            if ($anhBiaUrl && !str_starts_with($anhBiaUrl, 'http')) {
+                $anhBiaUrl = url('uploads/cookbooks/' . $anhBiaUrl);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật thành công',
+                'data' => [
+                    'TenCookBook' => $updatedCookbook->TenCookBook,
+                    'AnhBia' => $anhBiaUrl // Trả về URL đầy đủ để React hiển thị
+                ]
+            ]);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Lỗi cập nhật'], 404);
+        }
+    }
 }   
