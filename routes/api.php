@@ -72,10 +72,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
     // 3. Quản lý Blog cá nhân
-
-
-    // Thi - Thêm blog
+        // Thi - Thêm blog
         Route::post('/them-blog', [BlogController::class, 'themBlog']);
+        
+        // Thi - Dánh sách blog cá nhân của người dùng
+        Route::get('/blog-ca-nhan/{maND}', [BlogController::class, 'layDSBlogCaNhan']);
 
 
 

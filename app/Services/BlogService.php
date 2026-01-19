@@ -5,8 +5,7 @@ use App\Models\Blog;
 use Illuminate\Support\Str;
 class BlogService
 {
-    // Thi 
-    // Lấy tất cả danh sách blog 
+    // Thi  -Lấy tất cả danh sách blog 
 public function layDSBlog()
 {
     return Blog::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
@@ -57,7 +56,7 @@ public function layDSBlog()
                         'NgayDang' => $item->created_at
                     ];
                 });
-            // Lấy Bình thông tin bình luận
+            // Lấy thông tin bình luận
             $binhLuan = $blog->binhLuan->map(function ($item) {
                 return [
                     'Ma_BL'     => $item->Ma_BL,
@@ -92,8 +91,15 @@ public function layDSBlog()
                 'BinhLuan'     => $binhLuan
             ];
         }
-    
-    // Thi Thêm Blog
+    //Thi - Lấy danh sách blog của người dùng
+    public function layDSBlogCaNhan(int $maND)
+    {
+        return Blog::where('Ma_ND', $maND)
+            ->where('TrangThai', 1)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+    // Thi - Thêm Blog
     public function themBlog(array $duLieu)
     {
         // Upload ảnh
