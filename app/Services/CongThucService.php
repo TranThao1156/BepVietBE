@@ -53,17 +53,16 @@ class CongThucService
             ->orderBy('SoLuotXem', 'desc')
             ->first();
     }
+
     //Thảo - Ds công thức
     public function layDanhSachCongThuc(array $boLoc = [])
     {
-        return Cache::remember('home_mon_moi', 600, function () {
-            $query = CongThuc::query()
-                ->with(['nguoiDung', 'danhMuc'])
-                ->where('TrangThai', 1)
-                ->where('TrangThaiDuyet', "Chấp nhận");
+        $query = CongThuc::query()
+            ->with(['nguoiDung', 'danhMuc'])
+            ->where('TrangThai', 1)
+            ->where('TrangThaiDuyet', "Chấp nhận");
 
-            return $query->paginate($boLoc['limit'] ?? 6);
-        });
+        return $query->paginate($boLoc['limit'] ?? 6);
     }
 
     // Thảo - Chi tiết công thức

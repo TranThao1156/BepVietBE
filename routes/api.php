@@ -14,6 +14,8 @@ use App\Http\Controllers\API\NguoiDungController;
 use App\Http\Controllers\API\KhachController;
 use App\Http\Controllers\API\KiemDuyetController;
 use App\Http\Controllers\API\BlogController;
+use App\Http\Controllers\API\DashboardController;
+use App\Http\Controllers\API\DoashboardController;
 
 // 1. PUBLIC ROUTES (KHÔNG CẦN ĐĂNG NHẬP)
 
@@ -74,7 +76,12 @@ Route::middleware('auth:sanctum')->group(function () {
         // 2. Xử lý duyệt hoặc từ chối bài viết
         // URL: POST /api/admin/duyet-blog/xu-ly
         Route::post('/duyet-blog/xu-ly', [KiemDuyetController::class, 'xuLyDuyetBlog']);
+
+        // Thảo - Doashboard
+        Route::get('/dashboard', [DashboardController::class, 'index']);
     });
+
+
     // B. NHÓM API NGƯỜI DÙNG (Cả admin và user đều có quyền sử dụng các chức năng trên)
 
     Route::prefix('user')->middleware('role:1,0')->group(function () {
