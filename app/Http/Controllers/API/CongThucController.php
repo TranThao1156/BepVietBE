@@ -59,6 +59,17 @@ class CongThucController extends Controller
         return null;
     }
 
+    public function timKiem(Request $request)
+    {
+        // Gọi sang Service xử lý
+        $ketQua = $this->congThucService->xuLyTimKiem($request);
+
+        return response()->json([
+            'success' => true,
+            'data' => $ketQua
+        ]);
+    }
+
     // Thi - Lấy danh sách công thức mới nhất (4 món mới nhất)
     public function layDSCongThucMoi()
     {
