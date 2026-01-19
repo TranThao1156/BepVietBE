@@ -1,0 +1,13 @@
+[33m9fdd335[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mQuangKhoi[m[33m, [m[1;31morigin/QuangKhoi[m[33m)[m HEAD@{0}: commit: Doi ten và đổi ảnh cookbook
+[33m30267ae[m HEAD@{1}: commit: Xoa mon an trong cookbook
+[33m1bc8adc[m HEAD@{2}: commit: Hienr thị công thức trong cookbook
+[33m461f7c6[m HEAD@{3}: commit: sửa danh mục
+[33m92ce99a[m HEAD@{4}: commit: hiển thị danh sách danh mục, tạo danh mục và sửa danh mục
+[33m2b64225[m HEAD@{5}: commit (merge): Merge branch 'main' of https://github.com/TranThao1156/BepVietBE into QuangKhoi
+[33m9539e14[m HEAD@{6}: commit: Danh sách cookbook người dùng
+[33m92f2ca0[m HEAD@{7}: commit: Chỉnh sửa lại file Model người dùng và file Kiemtravaitro de fix loi cua themcookbook
+[33m76687c8[m HEAD@{8}: pull origin main: Fast-forward
+[33mad18ab2[m HEAD@{9}: commit: Them api tao cookbook, controllercookbook,
+[33m307f06c[m HEAD@{10}: commit: commit nhánh de luu code
+[33m6cd5890[m[33m ([m[1;32mmain[m[33m)[m HEAD@{11}: checkout: moving from main to QuangKhoi
+[33m6cd5890[m[33m ([m[1;32mmain[m[33m)[m HEAD@{12}: clone: from https://github.com/TranThao1156/BepVietBE.git
