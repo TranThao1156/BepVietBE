@@ -89,4 +89,21 @@ class CookbookService
         $cookbook->TrangThai = 0;
         return $cookbook->save();
     }
+    public function xoaMonKhoiCookbook($cookbookId, $recipeId, $userId)
+    {
+        // 1. Tìm Cookbook (Phải thuộc về User này để đảm bảo bảo mật)
+        $cookbook = Cookbook::where('Ma_CookBook', $cookbookId)
+                            ->where('Ma_ND', $userId)
+                            ->first();
+
+        if (!$cookbook) {
+            return false; // Không tìm thấy hoặc không phải chủ sở hữu
+        }
+
+        // 2. Thực hiện gỡ bỏ (Detach)
+        // Hàm detach sẽ xóa dòng liên kết trong bảng trung gian ct_cookbook
+        $cookbook->congthucs()->detach($recipeId);
+
+        return true;
+    }
 }

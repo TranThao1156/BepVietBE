@@ -33,11 +33,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Middleware 'role:0' kiểm tra user->VaiTro === 0
     // ----------------------------------------------------------------
     Route::prefix('admin')->middleware('role:0')->group(function () {
+        //Khôiii------
         Route::get('danh-muc', [DanhMucController::class, 'index']);
         Route::post('danh-muc/tao-danh-muc', [DanhMucController::class, 'store']);
         Route::delete('danh-muc/{id}', [DanhMucController::class, 'destroy']);
         Route::get('danh-muc/sua-danh-muc/{id}', [DanhMucController::class, 'show']);
         Route::put('danh-muc/sua-danh-muc/{id}', [DanhMucController::class, 'update']);
+        //------------
 
     });
     // B. NHÓM API NGƯỜI DÙNG (Cả admin và user đều có quyền sử dụng các chức năng trên)
@@ -46,14 +48,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/them-cong-thuc', [CongThucController::class, 'themCongThuc']);
     // 4. Cookbook (Bộ sưu tập)
-        //Khôi
+        //Khôi------
         Route::get('/cookbook', [CookbookController::class, 'danhSach']);
 
         Route::post('/cookbook/tao-cookbook', [CookbookController::class, 'store']);
 
         Route::put('/cookbook/{id}', [CookbookController::class, 'destroy']);
-        Route::get('/cookbook/chi-tiet/{id}', [CookbookController::class, 'show']);
 
+        Route::get('/cookbook/chi-tiet/{id}', [CookbookController::class, 'show']);
+        Route::post('/cookbook/{cookbook_id}/xoa-mon/{recipe_id}', [CookbookController::class, 'xoaMonKhoiCookbook']);
+        //----------------
 
     // 5. Thêm công thức vào cookbook
 

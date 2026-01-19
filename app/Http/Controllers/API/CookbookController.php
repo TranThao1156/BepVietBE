@@ -199,4 +199,33 @@ class CookbookController extends Controller
             ], 200);
         }
     }
+    public function xoaMonKhoiCookbook($cookbookId, $recipeId)
+    {
+        $user = auth('sanctum')->user();
+        if (!$user) return response()->json(['message' => 'Chưa đăng nhập'], 401);
+
+        try {
+            // Gọi Service để xử lý logic xóa
+            $result = $this->cookbookService->xoaMonKhoiCookbook(
+                $cookbookId, 
+                $recipeId, 
+                $user->Ma_ND
+            );
+
+            if ($result) {
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Đã xóa món ăn khỏi bộ sưu tập.'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Không tìm thấy hoặc không có quyền xóa.'
+                ], 404);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Lỗi: ' . $e->getMessage()], 500);
+        }
+    }
 }   
