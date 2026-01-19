@@ -11,6 +11,8 @@ class TimKiemService
     {
         $query = CongThuc::query();
 
+        $query->where('TrangThai', 1);
+        $query->where('TrangThaiDuyet', 'Chấp nhận');
         // 1. TÌM KIẾM (Sửa TieuDe -> TenMon)
         if ($request->has('keyword') && $request->keyword != '') {
             $keyword = $request->keyword;
@@ -78,12 +80,12 @@ class TimKiemService
                 $query->orderBy('SoLuotXem', 'desc');
                 break;
             case 'oldest':
-                // Sửa created_at -> Ma_CT (Sắp xếp theo ID tăng dần = Cũ nhất)
-                $query->orderBy('Ma_CT', 'asc'); 
+            
+                $query->orderBy('created_at', 'asc');
                 break;
             default: // newest
-                // Sửa created_at -> Ma_CT (Sắp xếp theo ID giảm dần = Mới nhất)
-                $query->orderBy('Ma_CT', 'desc'); 
+                
+                $query->orderBy('created_at', 'desc'); 
                 break;
         }
 

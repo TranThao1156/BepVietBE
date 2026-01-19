@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\NguoiDung;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-//Thảo 
 class CongThuc extends Model
 {
     use HasFactory;
-
+//Thảo 
     protected $table = 'congthuc';
     public $timestamps = true;
     public $incrementing = true;
@@ -32,24 +32,27 @@ class CongThuc extends Model
         'TrangThai'
     ];
 
+
     public function nguoidung()
     {
         return $this->belongsTo(NguoiDung::class, 'Ma_ND', 'Ma_ND');
     }
 
-    public function danh_muc()
-    {
+    public function vungMien() {
+        return $this->belongsTo(VungMien::class, 'Ma_VM', 'Ma_VM');
+    }
+
+    public function loaiMon() {
+        return $this->belongsTo(LoaiMon::class, 'Ma_LM', 'Ma_LM');
+    }
+
+    public function danhMuc() {
         return $this->belongsTo(DanhMuc::class, 'Ma_DM', 'Ma_DM');
     }
-
-    public function loaiMon()
+    
+    public function danhGia()
     {
-        return $this->belongsTo(LoaiMon::class, 'Ma_LM');
-    }
-
-    public function vungMien()
-    {
-        return $this->belongsTo(VungMien::class, 'Ma_VM');
+        return $this->hasMany(DanhGia::class, 'Ma_CT', 'Ma_CT');
     }
 
     public function nguyenLieu()
