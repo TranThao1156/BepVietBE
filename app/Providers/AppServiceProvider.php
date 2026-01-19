@@ -4,8 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
+use App\Services\AIChatService;
 
-class RouteServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
     public function boot()
     {
@@ -17,5 +18,12 @@ class RouteServiceProvider extends ServiceProvider
 
         Route::middleware('web')
             ->group(base_path('routes/web.php'));
+    }
+
+    public function register(): void
+    {
+        $this->app->singleton(AIChatService::class, function ($app) {
+            return new AIChatService();
+        });
     }
 }

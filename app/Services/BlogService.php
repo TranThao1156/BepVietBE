@@ -1,7 +1,6 @@
 <?php
 namespace App\Services;
 use App\Models\Blog;
-// import Str helper
 use Illuminate\Support\Str;
 class BlogService
 {
@@ -36,7 +35,7 @@ public function layDSBlog()
         {
             $blog = Blog::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien,Email,GioiTinh'])
                 ->where('TrangThai', 1)
-                ->where('TrangThaiDuyet', 'Chấp nhận')
+                // ->where('TrangThaiDuyet', 'Chấp nhận') // Cho phép xem cả blog chờ duyệt dành cho tác giả
                 ->findOrFail($maBlog);
 
             // Thi - Lấy Blog liên quan (cùng tác giả)
@@ -92,13 +91,24 @@ public function layDSBlog()
             ];
         }
     //Thi - Lấy danh sách blog của người dùng
-    public function layDSBlogCaNhan(int $maND)
+    public function layDSBlogCaNhan($user)
     {
-        return Blog::where('Ma_ND', $maND)
+        return Blog::where('Ma_ND', $user->Ma_ND)
             ->where('TrangThai', 1)
-            ->orderBy('created_at', 'desc')
+            ->select(
+                'Ma_Blog',
+                'TieuDe',
+                'ND_ChiTiet',
+                'HinhAnh',
+                'created_at',
+                'TrangThaiDuyet',
+            )
+            ->withCount('binhLuan')
+            ->orderByDesc('created_at')
             ->get();
     }
+
+
     // Thi - Thêm Blog
     public function themBlog(array $duLieu)
     {

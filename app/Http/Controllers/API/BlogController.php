@@ -36,15 +36,22 @@ class BlogController extends Controller
         ], 200);
     }
     // Thi - Dánh sách blog cá nhân của người dùng
-    public function layDSBlogCaNhan(int $maND)
+    public function layDSBlogCaNhan(Request $request)
     {
-        $data = $this->blogService->layDSBlogCaNhan($maND);
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chưa đăng nhập'
+            ], 401);
+        }
+        $blogs = $this->blogService->layDSBlogCaNhan($user);
         return response()->json([
             'success' => true,
-            'message' => 'Lấy danh sách blog cá nhân thành công',
-            'data' => $data
+            'data' => $blogs
         ], 200);
     }
+ 
     // Thi - Thêm blog
     public function themBlog(Request $request)
     {

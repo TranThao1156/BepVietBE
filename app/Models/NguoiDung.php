@@ -12,7 +12,7 @@ class NguoiDung extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
     protected $table = 'nguoidung';
     protected $primaryKey = 'Ma_ND';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'TenTK',
@@ -37,6 +37,7 @@ class NguoiDung extends Authenticatable
     {
         return $this->hasMany(CongThuc::class, 'Ma_ND');
     }
+    
     public function blog()
     {
         return $this->hasMany(Blog::class, 'Ma_ND', 'Ma_ND');
