@@ -67,6 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // A. NHÓM API ADMIN (Chỉ VaiTro = 0 mới gọi được)
     Route::prefix('admin')->middleware('role:0')->group(function () {
+        //Khôiii------
 
         Route::get('danh-muc', [DanhMucController::class, 'index']);
 
@@ -77,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('danh-muc/sua-danh-muc/{id}', [DanhMucController::class, 'show']);
 
         Route::put('danh-muc/sua-danh-muc/{id}', [DanhMucController::class, 'update']);
+        //------------
 
         Route::get('/duyet-blog', [KiemDuyetController::class, 'layDanhSachBlog']);
 
@@ -148,8 +150,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::put('/cookbook/{id}', [CookbookController::class, 'destroy']);
 
+
         Route::get('/cookbook/chi-tiet/{id}', [CookbookController::class, 'show']);
 
+        Route::post('/cookbook/{cookbook_id}/xoa-mon/{recipe_id}', [CookbookController::class, 'xoaMonKhoiCookbook']);
+
+        Route::put('/cookbook/{id}', [CookbookController::class, 'update']);
+        
         // 5. Thêm công thức vào cookbook
 
         // Đăng xuất

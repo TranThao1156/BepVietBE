@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Cookbook;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 class CookbookService
@@ -88,5 +89,55 @@ class CookbookService
         if (!$cookbook) return false;
         $cookbook->TrangThai = 0;
         return $cookbook->save();
+    }
+    public function xoaMonKhoiCookbook($cookbookId, $recipeId, $userId)
+    {
+        // 1. Tìm Cookbook (Phải thuộc về User này để đảm bảo bảo mật)
+        $cookbook = Cookbook::where('Ma_CookBook', $cookbookId)
+                            ->where('Ma_ND', $userId)
+                            ->first();
+
+        if (!$cookbook) {
+            return false; // Không tìm thấy hoặc không phải chủ sở hữu
+        }
+
+        // 2. Thực hiện gỡ bỏ (Detach)
+        // Hàm detach sẽ xóa dòng liên kết trong bảng trung gian ct_cookbook
+        $cookbook->congthucs()->detach($recipeId);
+
+        return true;
+    }
+    public function capNhatCookbook($cookbookId, $data, $fileAnh, $userId)
+    {
+        // 1. Tìm Cookbook
+        $cookbook = Cookbook::where('Ma_CookBook', $cookbookId)
+                            ->where('Ma_ND', $userId)
+                            ->first();
+
+        if (!$cookbook) return null;
+
+        // 2. Cập nhật tên
+        if (isset($data['TenCookBook'])) {
+            $cookbook->TenCookBook = $data['TenCookBook'];
+        }
+
+        // 3. Xử lý Ảnh Bìa (Nếu có gửi ảnh mới lên)
+        if ($fileAnh) {
+            // Xóa ảnh cũ nếu có (và không phải ảnh placeholder)
+            if ($cookbook->AnhBia && file_exists(public_path('uploads/cookbooks/' . $cookbook->AnhBia))) {
+                File::delete(public_path('uploads/cookbooks/' . $cookbook->AnhBia));
+            }
+
+            // Lưu ảnh mới
+            $tenAnh = time() . '_' . $fileAnh->getClientOriginalName();
+            $fileAnh->move(public_path('uploads/cookbooks'), $tenAnh);
+            
+            // Cập nhật tên ảnh vào DB
+            $cookbook->AnhBia = $tenAnh;
+        }
+
+        $cookbook->save();
+
+        return $cookbook;
     }
 }
