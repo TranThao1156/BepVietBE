@@ -16,6 +16,7 @@ class BinhLuan extends Model
         'Ma_CT',
         'Ma_ND',
         'NoiDungBL',
+        'Parent_ID', // <---Trâm -  THÊM DÒNG NÀY để khớp với Service
         'LoaiBL',
         'TrangThai'
     ];
@@ -34,5 +35,17 @@ class BinhLuan extends Model
     public function congThuc()
     {
         return $this->belongsTo(CongThuc::class, 'Ma_CT', 'Ma_CT');    
+    }
+
+    //Trâm - Quan hệ trả lời bình luận (Self-Referential Relationship)
+    public function parent()
+    {
+        return $this->belongsTo(BinhLuan::class, 'Parent_ID', 'Ma_BL');
+    }   
+    // Trâm - Quan hệ lấy các câu trả lời của bình luận này (Bình luận con)
+    public function replies()
+    {
+        // Một bình luận gốc (parent) có nhiều câu trả lời (children)
+        return $this->hasMany(BinhLuan::class, 'Parent_ID', 'Ma_BL');
     }
 }

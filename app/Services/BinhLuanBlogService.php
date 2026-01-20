@@ -15,6 +15,7 @@ class BinhLuanBlogService
         $binhLuan = BinhLuan::create([
             'Ma_ND'      => Auth::id(),
             'Ma_Blog'    => $data['Ma_Blog'],
+            'Parent_ID'  => $data['Parent_ID'] ?? null, //Thêm cột Parent_ID để hỗ trợ "Trả lời"
             'Ma_CT'      => null,
             'NoiDungBL'  => $data['NoiDungBL'],
             'LoaiBL'     => 1, // 1 là Blog
@@ -65,5 +66,19 @@ class BinhLuanBlogService
         $binhLuan->save();
 
         return true;
+    }
+
+    // 4. LẤY DANH SÁCH BÌNH LUẬN (Theo Blog)
+    public function layDanhSachBinhLuan($maBlog)
+    {
+        return BinhLuan::with('nguoiDung')
+            ->where('Ma_Blog', $maBlog)
+            ->where('TrangThai', 1)
+            ->whereNull('Parent_ID') // Lấy bình luận gốc trước
+            ->with(['replies' => function($query) {
+                $query->with('nguoiDung')->where('TrangThai', 1); // Lấy kèm các câu trả lời
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 }

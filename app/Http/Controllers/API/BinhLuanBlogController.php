@@ -65,4 +65,21 @@ class BinhLuanBlogController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+    // API Lấy danh sách bình luận của 1 bài Blog
+    public function index($maBlog)
+    {
+        try {
+            // Gọi hàm từ BinhLuanBlogService
+            $data = $this->service->layDanhSachBinhLuan($maBlog);
+            return response()->json([
+                'success' => true, 
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false, 
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\API\CongThucController;
 use App\Http\Controllers\API\TimKiemController; // Import TimKiemController - Trâm
 use App\Http\Controllers\API\DoiMatKhauController; // Import DoiMatKhauController - Trâm
 use App\Http\Controllers\API\BinhLuanBlogController; // Import BinhLuanBlogController - Trâm
+use App\Http\Controllers\API\DanhGiaController; // Import DanhGiaController - Trâm
 
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CookbookController;
@@ -46,6 +47,8 @@ Route::get('/blog', [BlogController::class, 'layDSBlog']);
 // Thi - Chi tiết Blog
 Route::get('/blog/{id}', [BlogController::class, 'layChiTietBlog']);
 
+//Trâm - API Lấy danh sách bình luận theo mã blog
+Route::get('/binh-luan-blog/{maBlog}', [BinhLuanBlogController::class, 'index']);
 
 //Trâm- API tìm kiếm công thức
 Route::get('/tim-kiem', [TimKiemController::class, 'timKiem']);
@@ -136,7 +139,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Trâm - API Bình luận Blog
         Route::post('/binh-luan-blog', [BinhLuanBlogController::class, 'store']);
         Route::put('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'update']);
-        Route::delete('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'destroy']);
-        
+        Route::delete('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'destroy']);       
+        // Trâm - API Đánh giá Công thức
+        Route::post('/danh-gia', [DanhGiaController::class, 'danhGia']);
+        Route::get('/danh-gia/{maCongThuc}', [DanhGiaController::class, 'layDanhGiaCuaToi']);
     });
 });
