@@ -55,22 +55,31 @@ class BlogController extends Controller
     // Thi - Thêm blog
     public function themBlog(Request $request)
     {
+        // Validate dữ liệu
         $request->validate([
             'TieuDe'     => 'required|string|max:255',
             'ND_ChiTiet' => 'required|string',
             'HinhAnh'    => 'required|image|mimes:jpg,jpeg,png|max:2048',
-            'Ma_ND'      => 'required|integer'
         ], [
             'TieuDe.required' => 'Tiêu đề không được để trống',
             'ND_ChiTiet.required' => 'Nội dung không được để trống',
             'HinhAnh.required' => 'Vui lòng chọn ảnh',
+            'HinhAnh.image' => 'File phải là ảnh',
         ]);
 
-        $blog = $this->blogService->themBlog($request->all());
+        // Lấy user từ token
+        $user = auth()->user();
+        // Nếu chưa đăng nhập
+        if (!$user) {
+            return response()->json([
+                'message' => 'Chưa đăng nhập'
+            ], 401);
+        }
+        
+        $blog = $this->blogService->themBlog($request, $user);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Blog đã được gửi và đang chờ duyệt',
+            'message' => 'Tạo blog thành công, đang chờ duyệt',
             'data' => $blog
         ], 201);
     }

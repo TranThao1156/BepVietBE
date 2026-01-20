@@ -2,11 +2,14 @@
 namespace App\Services;
 use App\Models\Blog;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+
 class BlogService
 {
     // Thi  -Lấy tất cả danh sách blog 
-public function layDSBlog()
-{
+    public function layDSBlog()
+    {
     return Blog::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
         ->where('TrangThai', 1)
         ->where('TrangThaiDuyet', 'Chấp nhận')
@@ -51,7 +54,10 @@ public function layDSBlog()
                         'Ma_Blog'  => $item->Ma_Blog,
                         'TieuDe'   => $item->TieuDe,
                         'Slug'     => Str::slug($item->TieuDe) . '-' . $item->Ma_Blog,
-                        'HinhAnh'  => $item->HinhAnh,
+                        // 'HinhAnh'  => $item->HinhAnh,
+                        'HinhAnh' => $item->HinhAnh
+                        ? asset('storage/img/Blog/' . rawurlencode($item->HinhAnh))
+                        : null,
                         'NgayDang' => $item->created_at
                     ];
                 });
@@ -74,7 +80,10 @@ public function layDSBlog()
                 'TieuDe'    => $blog->TieuDe,
                 'Slug'      => Str::slug($blog->TieuDe) . '-' . $blog->Ma_Blog,
                 'ND_ChiTiet'=> $blog->ND_ChiTiet, // chi tiết đầy đủ
-                'HinhAnh'   => $blog->HinhAnh,
+                // 'HinhAnh'   => $blog->HinhAnh,
+                'HinhAnh' => $blog->HinhAnh
+                    ? asset('storage/img/Blog/' . rawurlencode($blog->HinhAnh))
+                    : null,
                 'NgayDang'  => $blog->created_at,
                 'TacGia'    => [
                     'Ma_ND'      => $blog->nguoiDung->Ma_ND ?? null,
@@ -94,40 +103,61 @@ public function layDSBlog()
     public function layDSBlogCaNhan($user)
     {
         return Blog::where('Ma_ND', $user->Ma_ND)
-            ->where('TrangThai', 1)
-            ->select(
-                'Ma_Blog',
-                'TieuDe',
-                'ND_ChiTiet',
-                'HinhAnh',
-                'created_at',
-                'TrangThaiDuyet',
-            )
-            ->withCount('binhLuan')
-            ->orderByDesc('created_at')
-            ->get();
+    ->where('TrangThai', 1)
+    ->select(
+        'Ma_Blog',
+        'TieuDe',
+        'ND_ChiTiet',
+        'HinhAnh',
+        'created_at',
+        'TrangThaiDuyet',
+    )
+    ->withCount('binhLuan')
+    ->orderByDesc('created_at')
+    ->get()
+    ->map(function ($blog) {
+        return [
+            'Ma_Blog' => $blog->Ma_Blog,
+            'TieuDe'  => $blog->TieuDe,
+            'ND_ChiTiet' => $blog->ND_ChiTiet,
+            'TrangThaiDuyet' => $blog->TrangThaiDuyet,
+            'created_at' => $blog->created_at,
+            'binh_luan_count' => $blog->binh_luan_count,
+
+            //Lấy đường dẫn ảnh đầy đủ
+            'HinhAnh' => $blog->HinhAnh
+                ? asset('storage/img/Blog/' . rawurlencode($blog->HinhAnh))
+                : null,
+        ];
+    });
+
     }
-
-
+    
     // Thi - Thêm Blog
-    public function themBlog(array $duLieu)
+    public function themBlog(Request $request, $user)
     {
+        return DB::transaction(function () use ($request, $user) {
+
         // Upload ảnh
-        $tenAnh = null;
-        if (!empty($duLieu['HinhAnh'])) {
-            $tenAnh = time() . '_' . $duLieu['HinhAnh']->getClientOriginalName();
-            $duLieu['HinhAnh']->storeAs(
-                'public/img/Blog',
-                $tenAnh
-            );
-        }
-        return Blog::create([
-            'Ma_ND'          => $duLieu['Ma_ND'],
-            'TieuDe'         => $duLieu['TieuDe'],
-            'ND_ChiTiet'     => $duLieu['ND_ChiTiet'],
-            'HinhAnh'        => $tenAnh,
-            'TrangThai'      => 1,
-            'TrangThaiDuyet' => 'Chờ duyệt' // Mặc định khi tạo mới
-        ]);
+            $tenAnh = null;
+
+            if ($request->hasFile('HinhAnh')) {
+                $file = $request->file('HinhAnh');
+
+                // tạo tên ảnh an toàn
+                $tenAnh = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+                // LƯU ẢNH
+                $file->storeAs('img/Blog', $tenAnh, 'public');
+            }
+
+            return Blog::create([
+                'Ma_ND'          => $user->Ma_ND,
+                'TieuDe'         => $request->TieuDe,
+                'ND_ChiTiet'     => $request->ND_ChiTiet,
+                'HinhAnh'        => $tenAnh, // CHỈ LƯU TÊN ẢNH
+                'TrangThai'      => 1,
+                'TrangThaiDuyet' => 'Chờ duyệt'
+            ]);
+        });
     }
 }
