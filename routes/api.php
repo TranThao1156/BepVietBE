@@ -126,6 +126,18 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Thi - Thêm blog
         Route::post('/them-blog', [BlogController::class, 'themBlog']);
+        
+        // Thi - Dánh sách blog cá nhân của người dùng
+        Route::get('/blog-ca-nhan', [BlogController::class, 'layDSBlogCaNhan']);
+
+        // Thi - Xóa blog cá nhân
+        Route::post('/xoa-blog/{id}', [BlogController::class, 'xoaBlogCaNhan']);
+
+        // Thi - Lấy chi tiết blog cá nhân để sửa
+        Route::get('/lay-blog-can-sua/{id}', [BlogController::class, 'layBlogDeSua']);
+
+        // Thi - Sửa blog
+        Route::post('/cap-nhat-blog/{id}', [BlogController::class, 'capNhatBlog']);
 
         // 4. Cookbook (Bộ sưu tập)
 

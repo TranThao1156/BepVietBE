@@ -8,7 +8,6 @@ use App\Models\DanhMuc;
 use App\Models\LoaiMon;
 use App\Models\VungMien;
 use App\Services\CongThucService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -197,7 +196,7 @@ class CongThucController extends Controller
 
         // Gọi Service
         $data = $this->congThucService->LayDsCongThucByUser($user->Ma_ND, $limit);
-
+        
         return response()->json([
             'success' => true,
             'message' => 'Lấy danh sách công thức của bạn thành công',

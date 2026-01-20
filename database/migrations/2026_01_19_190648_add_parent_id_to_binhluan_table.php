@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::table('binhluan', function (Blueprint $table) {
         // Thêm cột Parent_ID kiểu số nguyên lớn, cho phép NULL
         // unsignedBigInteger để khớp với kiểu dữ liệu của khóa chính Ma_BL
-        $table->unsignedBigInteger('Parent_ID')->nullable()->after('Ma_ND');
+        $table->integer('Parent_ID')->nullable()->after('Ma_ND');
 
         // Tạo liên kết khóa ngoại (Foreign Key) trỏ ngược lại chính bảng binhluan
         // Khi xóa bình luận cha, các bình luận con (reply) sẽ tự động bị xóa theo (cascade)

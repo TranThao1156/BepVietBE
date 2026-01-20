@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('congthuc', function (Blueprint $table) {
             //
-            $table->timestamps();
+            // $table->timestamps();
         });
     }
 

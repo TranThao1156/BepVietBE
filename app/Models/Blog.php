@@ -12,7 +12,7 @@ class Blog extends Model
     // 17/01/2026 Thi tạo model Blog
     use HasFactory;
 
-    protected $table = 'blog'; // đổi nếu tên bảng khác
+    protected $table = 'blog';
 
     protected $primaryKey = 'Ma_Blog';
 
@@ -31,20 +31,11 @@ class Blog extends Model
     {
         return $this->belongsTo(NguoiDung::class, 'Ma_ND', 'Ma_ND');
     }
+    // Quan hệ với bình luận
     public function binhLuan()
     {
-        return $this->hasMany(BinhLuan::class, 'Ma_Blog', 'Ma_Blog');
-    }
-    // Thi 
-    // Tự tạo slug khi tạo mới
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($blog) {
-            $blog->Slug = Str::slug($blog->TieuDe) . '-' . time();
-            $blog->TrangThaiDuyet = 'cho_duyet';
-        });
+        return $this->hasMany(BinhLuan::class, 'Ma_Blog', 'Ma_Blog')
+        ->where('TrangThai', 1);
     }
     
 }
