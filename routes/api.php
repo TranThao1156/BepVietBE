@@ -159,7 +159,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/cookbooks/cua-toi', [CookbookController::class, 'myCookbooks']);
 
-        Route::post('/cookbooks/them-mon', [CookbookController::class, 'addRecipeToCookbook']);
+        Route::post('/cookbooks/them-mon', [CookbookController::class, 'themMonVaoCookbook']);
 
         // Đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
