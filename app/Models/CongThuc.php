@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\NguoiDung;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class CongThuc extends Model
 {
@@ -72,5 +73,14 @@ class CongThuc extends Model
             'Ma_CT',
             'Ma_CT'
         )->orderBy('STT');
+    }
+    // Thêm thuộc tính ảo vào mảng JSON trả về
+    protected $appends = ['slug_url']; 
+
+    // Định nghĩa Accessor để tạo slug từ TenMon
+    public function getSlugUrlAttribute()
+    {
+        // Kết quả: "pho-bo-ha-noi"
+        return Str::slug($this->TenMon);
     }
 }
