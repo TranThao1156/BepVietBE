@@ -23,8 +23,11 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // 16/01/2026 - Thi - công thức cho trang chủ
 Route::get('/cong-thuc/mon-moi', [CongThucController::class, 'layDSCongThucMoi']);
+
 Route::get('/cong-thuc/mon-noi-bat', [CongThucController::class, 'layDSCongThucNoiBat']);
+
 Route::get('/cong-thuc/mien-noi-bat/{mien}', [CongThucController::class, 'layCongThucNoiBatTheoMien']);
+
 // Thảo - danh sách công thức
 Route::get('/cong-thuc', [CongThucController::class, 'index']);
 
@@ -95,6 +98,9 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Thi - Dánh sách blog cá nhân của người dùng
         Route::get('/blog-ca-nhan', [BlogController::class, 'layDSBlogCaNhan']);
+
+        // Thi - Xóa blog cá nhân
+        Route::post('/xoa-blog/{id}', [BlogController::class, 'xoaBlogCaNhan']);
 
         // 4. Cookbook (Bộ sưu tập)
 

@@ -4,6 +4,7 @@ use App\Models\Blog;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BlogService
 {
@@ -34,88 +35,88 @@ class BlogService
     } 
 
     // Thi - Chi tiết blog
-        public function chiTietBlog(int $maBlog)
-        {
-            $blog = Blog::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien,Email,GioiTinh'])
-                ->where('TrangThai', 1)
-                // ->where('TrangThaiDuyet', 'Chấp nhận') // Cho phép xem cả blog chờ duyệt dành cho tác giả
-                ->findOrFail($maBlog);
+    public function chiTietBlog(int $maBlog)
+    {
+        $blog = Blog::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien,Email,GioiTinh'])
+            ->where('TrangThai', 1)
+            // ->where('TrangThaiDuyet', 'Chấp nhận') // Cho phép xem cả blog chờ duyệt dành cho tác giả
+            ->findOrFail($maBlog);
 
-            // Thi - Lấy Blog liên quan (cùng tác giả)
-            $blogLienQuan = Blog::where('Ma_Blog', '!=', $maBlog)
-                ->where('Ma_ND', $blog->Ma_ND)
-                ->where('TrangThai', 1)
-                ->where('TrangThaiDuyet', 'Chấp nhận')
-                ->orderByDesc('created_at')
-                ->limit(4)
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'Ma_Blog'  => $item->Ma_Blog,
-                        'TieuDe'   => $item->TieuDe,
-                        'Slug'     => Str::slug($item->TieuDe) . '-' . $item->Ma_Blog,
-                        // 'HinhAnh'  => $item->HinhAnh,
-                        'HinhAnh' => $item->HinhAnh
-                        ? asset('storage/img/Blog/' . rawurlencode($item->HinhAnh))
-                        : null,
-                        'NgayDang' => $item->created_at
-                    ];
-                });
-            // Lấy thông tin bình luận
-            $binhLuan = $blog->binhLuan->map(function ($item) {
+        // Thi - Lấy Blog liên quan (cùng tác giả)
+        $blogLienQuan = Blog::where('Ma_Blog', '!=', $maBlog)
+            ->where('Ma_ND', $blog->Ma_ND)
+            ->where('TrangThai', 1)
+            ->where('TrangThaiDuyet', 'Chấp nhận')
+            ->orderByDesc('created_at')
+            ->limit(4)
+            ->get()
+            ->map(function ($item) {
                 return [
-                    'Ma_BL'     => $item->Ma_BL,
-                    'NoiDungBL' => $item->NoiDungBL,
-                    'LoaiBL'    => $item->LoaiBL,
-                    'NgayBL'    => $item->created_at,
-                    'NguoiDung' => [
-                        'Ma_ND'      => $item->nguoiDung->Ma_ND ?? null,
-                        'HoTen'      => $item->nguoiDung->HoTen ?? '',
-                        'AnhDaiDien' => $item->nguoiDung->AnhDaiDien ?? 'avatar.png',
-                    ]
+                    'Ma_Blog'  => $item->Ma_Blog,
+                    'TieuDe'   => $item->TieuDe,
+                    'Slug'     => Str::slug($item->TieuDe) . '-' . $item->Ma_Blog,
+                    // 'HinhAnh'  => $item->HinhAnh,
+                    'HinhAnh' => $item->HinhAnh
+                    ? asset('storage/img/Blog/' . rawurlencode($item->HinhAnh))
+                    : null,
+                    'NgayDang' => $item->created_at
                 ];
             });
+        // Lấy thông tin bình luận
+        $binhLuan = $blog->binhLuan->map(function ($item) {
             return [
-                'Ma_Blog'   => $blog->Ma_Blog,
-                'TieuDe'    => $blog->TieuDe,
-                'Slug'      => Str::slug($blog->TieuDe) . '-' . $blog->Ma_Blog,
-                'ND_ChiTiet'=> $blog->ND_ChiTiet, // chi tiết đầy đủ
-                // 'HinhAnh'   => $blog->HinhAnh,
-                'HinhAnh' => $blog->HinhAnh
-                    ? asset('storage/img/Blog/' . rawurlencode($blog->HinhAnh))
-                    : null,
-                'NgayDang'  => $blog->created_at,
-                'TacGia'    => [
-                    'Ma_ND'      => $blog->nguoiDung->Ma_ND ?? null,
-                    'HoTen'      => $blog->nguoiDung->HoTen ?? '',
-                    'AnhDaiDien' => $blog->nguoiDung->AnhDaiDien ?? 'avatar.png',
-                    'Email'      => $blog->nguoiDung->Email ?? '',
-                    'GioiTinh'   => $blog->nguoiDung->GioiTinh ?? '',
-                ],
-                'SoBinhLuan' => $blog->binhLuan->count(),
-                // Gắn thêm blog liên quan
-                'BlogLienQuan' => $blogLienQuan,
-                // Gắn thêm bình luận
-                'BinhLuan'     => $binhLuan
+                'Ma_BL'     => $item->Ma_BL,
+                'NoiDungBL' => $item->NoiDungBL,
+                'LoaiBL'    => $item->LoaiBL,
+                'NgayBL'    => $item->created_at,
+                'NguoiDung' => [
+                    'Ma_ND'      => $item->nguoiDung->Ma_ND ?? null,
+                    'HoTen'      => $item->nguoiDung->HoTen ?? '',
+                    'AnhDaiDien' => $item->nguoiDung->AnhDaiDien ?? 'avatar.png',
+                ]
             ];
-        }
+        });
+        return [
+            'Ma_Blog'   => $blog->Ma_Blog,
+            'TieuDe'    => $blog->TieuDe,
+            'Slug'      => Str::slug($blog->TieuDe) . '-' . $blog->Ma_Blog,
+            'ND_ChiTiet'=> $blog->ND_ChiTiet, // chi tiết đầy đủ
+            // 'HinhAnh'   => $blog->HinhAnh,
+            'HinhAnh' => $blog->HinhAnh
+                ? asset('storage/img/Blog/' . rawurlencode($blog->HinhAnh))
+                : null,
+            'NgayDang'  => $blog->created_at,
+            'TacGia'    => [
+                'Ma_ND'      => $blog->nguoiDung->Ma_ND ?? null,
+                'HoTen'      => $blog->nguoiDung->HoTen ?? '',
+                'AnhDaiDien' => $blog->nguoiDung->AnhDaiDien ?? 'avatar.png',
+                'Email'      => $blog->nguoiDung->Email ?? '',
+                'GioiTinh'   => $blog->nguoiDung->GioiTinh ?? '',
+            ],
+            'SoBinhLuan' => $blog->binhLuan->count(),
+            // Gắn thêm blog liên quan
+            'BlogLienQuan' => $blogLienQuan,
+            // Gắn thêm bình luận
+            'BinhLuan'     => $binhLuan
+        ];
+    }
     //Thi - Lấy danh sách blog của người dùng
     public function layDSBlogCaNhan($user)
     {
         return Blog::where('Ma_ND', $user->Ma_ND)
-    ->where('TrangThai', 1)
-    ->select(
-        'Ma_Blog',
-        'TieuDe',
-        'ND_ChiTiet',
-        'HinhAnh',
-        'created_at',
-        'TrangThaiDuyet',
-    )
-    ->withCount('binhLuan')
-    ->orderByDesc('created_at')
-    ->get()
-    ->map(function ($blog) {
+            ->where('TrangThai', 1)
+            ->select(
+                'Ma_Blog',
+                'TieuDe',
+                'ND_ChiTiet',
+                'HinhAnh',
+                'created_at',
+                'TrangThaiDuyet',
+            )
+            ->withCount('binhLuan')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($blog) {
         return [
             'Ma_Blog' => $blog->Ma_Blog,
             'TieuDe'  => $blog->TieuDe,
@@ -128,9 +129,8 @@ class BlogService
             'HinhAnh' => $blog->HinhAnh
                 ? asset('storage/img/Blog/' . rawurlencode($blog->HinhAnh))
                 : null,
-        ];
-    });
-
+            ];
+        });
     }
     
     // Thi - Thêm Blog
@@ -160,4 +160,27 @@ class BlogService
             ]);
         });
     }
+    
+    // Thi - Xoá blog cá nhân (xoá mềm) đổi trạng thái 
+    public function xoaBlogCaNhan($blogId, $user)
+    {
+        $blog = Blog::where('Ma_Blog', $blogId)
+            ->where('Ma_ND', $user->Ma_ND) // đảm bảo đúng chủ blog
+            ->where('TrangThai', 1)        // chỉ xoá blog đang hoạt động
+            ->first();
+
+        if (!$blog) {
+            throw new ModelNotFoundException('Blog không tồn tại hoặc bạn không có quyền xoá');
+        }
+
+        // Xoá mềm
+        $blog->TrangThai = 0;
+        $blog->save();
+
+        return [
+            'Ma_Blog' => $blog->Ma_Blog,
+            'TrangThai' => $blog->TrangThai
+        ];
+    }
+
 }

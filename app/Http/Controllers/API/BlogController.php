@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Blog;
 use App\Services\BlogService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BlogController extends Controller
 {
@@ -15,9 +16,9 @@ class BlogController extends Controller
         $this->blogService = $blogService;
     }
     // Thi - Lấy danh sách blog 
-    public function layDSBlog(BlogService $blogService)
+    public function layDSBlog()
     {
-        $data = $blogService->layDSBlog();
+        $data = $this->blogService->layDSBlog();
 
             return response()->json([
                 'success' => true,
@@ -25,6 +26,7 @@ class BlogController extends Controller
                 'data' => $data
         ], 200);
     }
+
     // Thi - Chi tiết blog
     public function layChiTietBlog(int $id)
     {
@@ -83,4 +85,35 @@ class BlogController extends Controller
             'data' => $blog
         ], 201);
     }
+
+    // Thi - Xoá blog cá nhân (xoá mềm)
+    public function xoaBlogCaNhan(int $maBlog, Request $request)
+    {
+        try {
+
+            $user = $request->user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Chưa đăng nhập'
+                ], 401);
+            }
+
+            $result = $this->blogService->xoaBlogCaNhan($maBlog, $user);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Xoá blog thành công',
+                'data' => $result
+            ], 200);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 404);
+        }
+    }
+
 }
