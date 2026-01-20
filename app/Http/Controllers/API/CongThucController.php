@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use App\Models\BinhLuan;
+
 class CongThucController extends Controller
 {
     protected $congThucService;
@@ -284,16 +285,14 @@ class CongThucController extends Controller
         try {
             // Kiểm tra công thức tồn tại
             $congThuc = CongThuc::find($id);
-
             if (!$congThuc) {
-                return response()->json([
-                    'message' => 'Không tìm thấy công thức'
-                ], 404);
+                return response()->json(['message' => 'Không tìm thấy công thức'], 404);
             }
 
             // Lấy danh sách bình luận
             $binhLuan = BinhLuan::where('Ma_CT', $id)
-                ->with('nguoiDung')
+                ->whereNull('parent_id') // 1. Chỉ lấy bình luận CHA (Gốc)
+                ->with(['nguoiDung', 'replies.nguoiDung']) // 2. Lấy kèm Con và Info người dùng
                 ->orderBy('created_at', 'desc')
                 ->get();
 

@@ -84,10 +84,17 @@ Route::middleware('auth:sanctum')->group(function () {
         // Thảo - Xóa công thức
         Route::post('/cong-thuc/xoa-cong-thuc/{Ma_CT}', [CongThucController::class, 'xoaCongThuc']);
         //Khanh - Bình Luận công thức
-        Route::post('/binh-luan/them', [BinhLuanController::class, 'luuBinhLuan']);
-        //Khanh - Hiển thị bình luận công thức
-        Route::get('/cong-thuc/{id}/binh-luan',[CongThucController::class, 'showBinhLuan']);
+        // Xem bình luận (Dành cho user đã đăng nhập)
+        Route::get('/cong-thuc/{id}/binh-luan', [CongThucController::class, 'showBinhLuan']);
 
+        // Thêm bình luận (Hoặc trả lời)
+        Route::post('/binh-luan/them', [BinhLuanController::class, 'luuBinhLuan']);
+
+        // Sửa bình luận
+        Route::put('/binh-luan/sua/{id}', [BinhLuanController::class, 'suaBinhLuan']);
+
+        // Xóa bình luận
+        Route::delete('/binh-luan/xoa/{id}', [BinhLuanController::class, 'xoaBinhLuan']);
         // 2. Quản lý Công thức cá nhân (My Recipes)
 
 

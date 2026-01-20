@@ -46,5 +46,9 @@ class Blog extends Model
             $blog->TrangThaiDuyet = 'cho_duyet';
         });
     }
-    
+    // Quan hệ: Một bình luận có nhiều câu trả lời (replies)
+    public function replies()
+    {
+        return $this->hasMany(BinhLuan::class, 'parent_id', 'Ma_BL');
+    }
 }
