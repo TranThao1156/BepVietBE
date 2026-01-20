@@ -5,6 +5,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Auth\Access\AuthorizationException;
+
 
 class BlogService
 {
@@ -172,7 +174,6 @@ class BlogService
         if (!$blog) {
             throw new ModelNotFoundException('Blog không tồn tại hoặc bạn không có quyền xoá');
         }
-
         // Xoá mềm
         $blog->TrangThai = 0;
         $blog->save();
@@ -181,6 +182,72 @@ class BlogService
             'Ma_Blog' => $blog->Ma_Blog,
             'TrangThai' => $blog->TrangThai
         ];
+    }
+
+    // Thi - Lấy chi tiết blog cá nhân để sửa
+    public function layBlogDeSua($blogId, $user)
+    {
+        // 1. Blog có tồn tại không (kể cả đã xoá)
+        $blog = Blog::where('Ma_Blog', $blogId)->first();
+
+        if (!$blog) {
+            throw new ModelNotFoundException('Blog không tồn tại');
+        }
+
+        // 2. Không phải blog của user
+        if ($blog->Ma_ND !== $user->Ma_ND) {
+            throw new AuthorizationException('Bạn không có quyền sửa blog này');
+        }
+
+        // 3. Blog đã bị xoá mềm
+        if ($blog->TrangThai != 1) {
+            throw new AuthorizationException('Blog này đã bị xoá, không thể chỉnh sửa');
+        }
+
+        // 4. OK
+        return [
+            'Ma_Blog'    => $blog->Ma_Blog,
+            'TieuDe'     => $blog->TieuDe,
+            'ND_ChiTiet' => $blog->ND_ChiTiet,
+            'HinhAnh'    => $blog->HinhAnh
+                ? asset('storage/img/Blog/' . rawurlencode($blog->HinhAnh))
+                : null,
+            'TrangThaiDuyet' => $blog->TrangThaiDuyet
+        ];
+    }
+    // Thi - Cập nhật blog cá nhân
+    public function capNhatBlog($blogId, Request $request, $user)
+    {
+        return DB::transaction(function () use ($blogId, $request, $user) {
+
+            $blog = Blog::where('Ma_Blog', $blogId)
+                ->where('Ma_ND', $user->Ma_ND)
+                ->where('TrangThai', 1)
+                ->first();
+
+            if (!$blog) {
+                throw new ModelNotFoundException('Blog không tồn tại hoặc bạn không có quyền sửa');
+            }
+
+            // Upload ảnh mới (nếu có)
+            if ($request->hasFile('HinhAnh')) {
+                $file = $request->file('HinhAnh');
+                $tenAnh = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+                $file->storeAs('img/Blog', $tenAnh, 'public');
+
+                $blog->HinhAnh = $tenAnh;
+            }
+
+            $blog->TieuDe     = $request->TieuDe;
+            $blog->ND_ChiTiet = $request->ND_ChiTiet;
+
+            // Khi sửa → chuyển về chờ duyệt lại (nếu muốn)
+            $blog->TrangThaiDuyet = 'Chờ duyệt';
+
+            $blog->save();
+
+            return $blog;
+        });
     }
 
 }

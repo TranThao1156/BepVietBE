@@ -116,4 +116,63 @@ class BlogController extends Controller
         }
     }
 
+    // Thi - Cập nhật blog cá nhân
+    public function capNhatBlog(int $id, Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chưa đăng nhập'
+            ], 401);
+        }
+
+        // Validate
+        $request->validate([
+            'TieuDe'     => 'required|string|max:255',
+            'ND_ChiTiet' => 'required|string',
+            'HinhAnh'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $blog = $this->blogService->capNhatBlog($id, $request, $user);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật blog thành công',
+            'data' => $blog
+        ], 200);
+    }
+
+    // Thi - Lấy chi tiết blog cá nhân để sửa
+    public function layBlogDeSua($id, Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            $data = $this->blogService->layBlogDeSua($id, $user);
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ], 200);
+            
+        } 
+            // 1. Blog có tồn tại không (kể cả đã xoá)
+            catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 404);
+
+        } 
+          // 2. Không phải blog của user 
+            catch (AuthorizationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 403);
+        }
+    }
+
 }
