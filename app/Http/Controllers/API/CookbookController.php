@@ -67,6 +67,30 @@ class CookbookController extends Controller
             return response()->json(['message' => 'Lỗi Server: ' . $e->getMessage()], 500);
         }
     }
+    public function destroy($id)
+    {
+        $user = auth('sanctum')->user();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Chưa đăng nhập'], 401);
+        }
+
+        // Gọi service để xử lý ẩn
+        // Lưu ý: Dùng $user->Ma_ND khớp với logic trong function danhSach
+        $result = $this->cookbookService->anCookbook($id, $user->Ma_ND);
+
+        if ($result) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xóa bộ sưu tập thành công.'
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy bộ sưu tập hoặc bạn không có quyền xóa.'
+            ], 404);
+        }
+    }
     public function danhSach(Request $request)
     {
         $user = auth('sanctum')->user();
@@ -93,30 +117,7 @@ class CookbookController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-    public function destroy($id)
-    {
-        $user = auth('sanctum')->user();
-
-        if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Chưa đăng nhập'], 401);
-        }
-
-        // Gọi service để xử lý ẩn
-        // Lưu ý: Dùng $user->Ma_ND khớp với logic trong function danhSach
-        $result = $this->cookbookService->anCookbook($id, $user->Ma_ND);
-
-        if ($result) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã xóa bộ sưu tập thành công.'
-            ]);
-        } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'Không tìm thấy bộ sưu tập hoặc bạn không có quyền xóa.'
-            ], 404);
-        }
-    }
+    
     public function show($id)
     {
         try {
