@@ -272,4 +272,58 @@ class CookbookController extends Controller
             return response()->json(['success' => false, 'message' => 'Lỗi cập nhật'], 404);
         }
     }
+    public function myCookbooks(Request $request)
+    {
+        $user = auth('sanctum')->user();
+        if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
+
+        // Tận dụng hàm layCookbookCuaUser có sẵn trong Service của bạn
+        // Hàm này trả về raw model có withCount, rất phù hợp cho dropdown select
+        $data = $this->cookbookService->layCookbookCuaUser($user->Ma_ND);
+
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
+    }
+    public function themMonVaoCookbook(Request $request)
+    {
+        // 1. Validate
+        $validator = Validator::make($request->all(), [
+            'Ma_CookBook' => 'required|integer',
+            'Ma_CT'       => 'required|integer|exists:congthuc,Ma_CT',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = auth('sanctum')->user();
+        if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
+
+        // 2. Gọi Service xử lý
+        $result = $this->cookbookService->themMonVaoCookbook(
+            $user->Ma_ND,
+            $request->Ma_CookBook,
+            $request->Ma_CT
+        );
+
+        // 3. Trả về kết quả
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'message' => $result['message']
+            ], 200);
+        } else {
+            // Lỗi nghiệp vụ (ví dụ: đã tồn tại, không phải chủ sở hữu)
+            return response()->json([
+                'success' => false,
+                'message' => $result['message']
+            ], 400); 
+        }
+    }
 }   

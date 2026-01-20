@@ -95,9 +95,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('user')->middleware('role:1,0')->group(function () {
 
-    // 1. Thông tin cá nhân & Tài khoản
+        // 1. Thông tin cá nhân & Tài khoản
 
-    // 2. Quản lý Công thức cá nhân (My Recipes)
+        // 2. Quản lý Công thức cá nhân (My Recipes)
 
         // Công thức
         // Thảo - Thêm công thức
@@ -128,7 +128,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Thi - Thêm blog
         Route::post('/them-blog', [BlogController::class, 'themBlog']);
-        
+
         // Thi - Dánh sách blog cá nhân của người dùng
         Route::get('/blog-ca-nhan', [BlogController::class, 'layDSBlogCaNhan']);
 
@@ -156,8 +156,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cookbook/{cookbook_id}/xoa-mon/{recipe_id}', [CookbookController::class, 'xoaMonKhoiCookbook']);
 
         Route::put('/cookbook/{id}', [CookbookController::class, 'update']);
-        
-        // 5. Thêm công thức vào cookbook
+
+        Route::get('/cookbooks/cua-toi', [CookbookController::class, 'myCookbooks']);
+
+        Route::post('/cookbooks/them-mon', [CookbookController::class, 'addRecipeToCookbook']);
 
         // Đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -166,15 +168,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
         //Trâm - Các API yêu cầu phải đăng nhập mới dùng được
         Route::post('/doi-mat-khau', [DoiMatKhauController::class, 'doiMatKhau']);
- 
+
         // Trâm - API Bình luận Blog
         Route::post('/binh-luan-blog', [BinhLuanBlogController::class, 'store']);
 
         Route::put('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'update']);
 
         Route::delete('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'destroy']);
-        
-        Route::delete('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'destroy']);       
+
+        Route::delete('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'destroy']);
         // Trâm - API Đánh giá Công thức
         Route::post('/danh-gia', [DanhGiaController::class, 'danhGia']);
         Route::get('/danh-gia/cua-toi/{maCongThuc}', [DanhGiaController::class, 'layDanhGiaCuaToi']);
