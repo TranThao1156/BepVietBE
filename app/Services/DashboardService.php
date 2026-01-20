@@ -16,6 +16,7 @@ class DashboardService
 
         // 1. Tổng hợp số liệu thống kê
         $tongNguoiDung = NguoiDung::count();
+        
         $userMoiHomNay = NguoiDung::whereDate('created_at', $homNay)->count();
         
         $tongCongThuc = CongThuc::count();

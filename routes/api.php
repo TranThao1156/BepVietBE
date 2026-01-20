@@ -88,6 +88,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Thảo - Doashboard
         Route::get('/dashboard', [DashboardController::class, 'index']);
+
+        // Thảo - Xuất thống kê (Excel)
+        Route::get('/dashboard/export', [DashboardController::class, 'export']);
+
+
     });
 
 

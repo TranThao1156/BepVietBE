@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\API; // Hoặc App\Http\Controllers\API\Admin tùy cấu trúc folder của bạn
 
+use App\Exports\ThongKeExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\DashboardService;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
@@ -30,12 +32,27 @@ class DashboardController extends Controller
                 'message' => 'Lấy dữ liệu Dashboard thành công',
                 'data'    => $data
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Lỗi server: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            // 1. Lấy dữ liệu thống kê (tái sử dụng Service cũ)
+            $data = $this->dashboardService->laySoLieuTongQuan('7days');
+
+            // 2. Xuất ra file Excel
+            // Tên file: bao-cao-thong-ke-{ngày-giờ}.xlsx
+            $fileName = 'bao-cao-thong-ke-' . now()->format('Y-m-d_H-i') . '.xlsx';
+
+            return Excel::download(new ThongKeExport($data), $fileName);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }
