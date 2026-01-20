@@ -17,6 +17,7 @@ use App\Http\Controllers\API\KhachController;
 use App\Http\Controllers\API\KiemDuyetController;
 use App\Http\Controllers\API\BlogController;
 use App\Http\Controllers\API\DashboardController;
+use App\Http\Controllers\API\QuanLyController;
 
 // 1. PUBLIC ROUTES (KHÔNG CẦN ĐĂNG NHẬP)
 
@@ -88,6 +89,18 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Thảo - Doashboard
         Route::get('/dashboard', [DashboardController::class, 'index']);
+
+        // 3. Quản lý người dùng
+
+        // Thi - Lấy danh sách toàn bộ người dùng
+        Route::get('/quan-ly-nguoi-dung', [QuanLyController::class, 'layDSNguoiDung']);
+
+        // Thi - Tìm kiếm người dùng theo tên hoặc email
+        // Route::get('/quan-ly-nguoi-dung/tim-kiem', [QuanLyController::class, 'timKiemNguoiDung']);
+
+        // Thi - Lọc người dùng theo vai trò
+        // Route::get('/quan-ly-nguoi-dung/loc-theo-vai-tro', [QuanLyController::class, 'locNguoiDungTheoVaiTro']);
+
     });
 
 
