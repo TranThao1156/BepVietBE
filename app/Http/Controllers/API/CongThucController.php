@@ -9,6 +9,7 @@ use App\Models\LoaiMon;
 use App\Models\VungMien;
 use App\Services\CongThucService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class CongThucController extends Controller
