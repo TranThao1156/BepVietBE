@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\BuocThucHien;
@@ -8,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use App\Models\NguoiDung;
 
 class CongThucService
 {
@@ -17,7 +19,7 @@ class CongThucService
     {
         return CongThuc::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
             ->where('TrangThai', 1)
-            -> where('TrangThaiDuyet', "Chấp nhận")
+            ->where('TrangThaiDuyet', "Chấp nhận")
             ->orderBy('created_at', 'desc')
             ->take(4)
             ->get();
@@ -27,7 +29,7 @@ class CongThucService
     {
         return CongThuc::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
             ->where('TrangThai', 1)
-            -> where('TrangThaiDuyet', "Chấp nhận")
+            ->where('TrangThaiDuyet', "Chấp nhận")
             ->orderBy('SoLuotXem', 'desc')
             ->take(4)
             ->get();
@@ -51,15 +53,15 @@ class CongThucService
             ->orderBy('SoLuotXem', 'desc')
             ->first();
     }
+
     //Thảo - Ds công thức
     public function layDanhSachCongThuc(array $boLoc = [])
     {
         $query = CongThuc::query()
-            ->with(['nguoidung', 'danh_muc'])
+            ->with(['nguoiDung', 'danhMuc'])
             ->where('TrangThai', 1)
             ->where('TrangThaiDuyet', "Chấp nhận");
 
-        // Phân trang
         return $query->paginate($boLoc['limit'] ?? 6);
     }
 
@@ -71,7 +73,12 @@ class CongThucService
             'vungMien',
             'nguyenLieu',
             'buocThucHien',
-            'nguoidung'
+            'nguoidung',
+            // Trâm - đã sửa: nạp trước danh sách đánh giá + thông tin người đánh giá để FE hiển thị "Người dùng đã đánh giá"
+            'danhGia' => function ($q) {
+                $q->orderByDesc('Ma_DG')
+                    ->with(['nguoidung:Ma_ND,HoTen,AnhDaiDien']);
+            }
         ])->findOrFail($maCT);
 
         // Lấy món liên quan
@@ -149,7 +156,7 @@ class CongThucService
                 'TrangThai' => 1
             ]);
 
-            // --- LOGIC QUAN TRỌNG: Thêm nguyên liệu ---
+            // Thêm nguyên liệu
             foreach ($request->NguyenLieu as $nl) {
                 $tenChuanHoa = Str::ucfirst(Str::lower(trim(preg_replace('/\s+/', ' ', $nl['TenNguyenLieu']))));
                 $donViChuanHoa = Str::lower(trim($nl['DonViDo']));
@@ -288,5 +295,126 @@ class CongThucService
         $congThuc->save();
 
         return true;
+    }
+
+    // Thảo - Ghi nhận lịch sử xem
+    public function ghiNhanLichSuXem(int $userId, int $maCT)
+    {
+        // Tên bảng là 'lichsuxem' (không có gạch dưới giữa lich và su)
+        DB::table('lichsuxem')->updateOrInsert(
+            [
+                'Ma_ND' => $userId,
+                'Ma_CT' => $maCT
+            ],
+            [
+                'ThoiGianXem' => now(),
+            ]
+        );
+    }
+
+    // Thảo - Lấy lịch sử xem
+    public function layLichSuXemCuaUser(int $userId, int $limit = 10)
+    {
+        return DB::table('lichsuxem') // Tên bảng: lichsuxem
+            ->join('congthuc', 'lichsuxem.Ma_CT', '=', 'congthuc.Ma_CT')
+            ->join('nguoidung', 'congthuc.Ma_ND', '=', 'nguoidung.Ma_ND')
+            ->where('lichsuxem.Ma_ND', $userId)
+            ->where('congthuc.TrangThai', 1)
+            ->orderByDesc('lichsuxem.ThoiGianXem')
+            ->limit($limit)
+            ->select(
+                'congthuc.Ma_CT',
+                'congthuc.TenMon',
+                'congthuc.HinhAnh',
+                'congthuc.ThoiGianNau',
+                'congthuc.DoKho',
+                'congthuc.TrangThaiDuyet',
+                'nguoidung.HoTen as TenTacGia',
+                'lichsuxem.ThoiGianXem as NgayXem' // Alias để frontend dễ dùng
+            )
+            ->get();
+    }
+
+    public function xuLyTimKiem(Request $request)
+    {
+        $query = CongThuc::query()->with(['nguoiDung', 'danhMuc']);
+
+        $query->where('TrangThai', 1);
+        $query->where('TrangThaiDuyet', 'Chấp nhận');
+        // 1. TÌM KIẾM (Sửa TieuDe -> TenMon)
+        if ($request->has('keyword') && $request->keyword != '') {
+            $keyword = $request->keyword;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('TenMon', 'LIKE', "%{$keyword}%");
+                // Nếu bảng của bạn có cột NguyenLieu thì thêm dòng dưới, không thì xóa đi:
+                // ->orWhere('NguyenLieu', 'LIKE', "%{$keyword}%");
+            });
+        }
+
+        // 2. LỌC VÙNG MIỀN (Dựa vào cột Ma_VM)
+        // Frontend gửi lên: region=1, region=2...
+        if ($request->filled('region') && $request->region != 'all') {
+            $query->where('Ma_VM', $request->region);
+        }
+
+        // 3. LỌC LOẠI MÓN (Dựa vào cột Ma_LM - Theo ảnh database bạn gửi)
+        // Frontend gửi lên: category=1, category=2...
+        if ($request->filled('category') && $request->category != 'all') {
+            $query->where('Ma_LM', $request->category);
+        }
+
+        // 4. LỌC ĐỘ KHÓ (Dựa vào cột DoKho)
+        // Frontend gửi lên: difficulty=1 (Dễ), 2 (TB), 3 (Khó)
+        // Lưu ý: Nếu DB bạn lưu chữ "Dễ" thì sửa số 1 thành chữ "Dễ"
+        if ($request->filled('difficulty') && $request->difficulty != 'all') {
+            // Kiểm tra xem DB bạn lưu số hay chữ. 
+            // Theo ảnh bạn gửi là chữ "Trung bình", "Dễ".
+            // Nên ta cần map số sang chữ hoặc Frontend gửi thẳng chữ lên.
+            // Ở đây mình giả định Frontend gửi số, Backend map sang chữ cho chuẩn DB:
+            $mapDoKho = [
+                '1' => 'Dễ',
+                '2' => 'Trung bình',
+                '3' => 'Khó'
+            ];
+            if (isset($mapDoKho[$request->difficulty])) {
+                $query->where('DoKho', $mapDoKho[$request->difficulty]);
+            }
+        }
+
+        // 5. LỌC THỜI GIAN (Dựa vào cột ThoiGianNau)
+        if ($request->filled('time')) {
+            switch ($request->time) {
+                case 'under_15':
+                    $query->where('ThoiGianNau', '<=', 15); // Lấy món <= 15 phút
+                    break;
+                case 'under_30':
+                    $query->where('ThoiGianNau', '<', 30);
+                    break;
+                case '30_60':
+                    $query->whereBetween('ThoiGianNau', [30, 60]);
+                    break;
+                case 'over_60':
+                    $query->where('ThoiGianNau', '>', 60);
+                    break;
+            }
+        }
+
+        // 2. SẮP XẾP (Sửa LuotXem -> SoLuotXem)
+        $sort = $request->get('sort', 'newest');
+        switch ($sort) {
+            case 'popular':
+                $query->orderBy('SoLuotXem', 'desc');
+                break;
+            case 'oldest':
+
+                $query->orderBy('created_at', 'asc');
+                break;
+            default: // newest
+
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        return $query->paginate(6);
     }
 }

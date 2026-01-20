@@ -33,7 +33,7 @@ class CongThuc extends Model
     ];
 
 
-    public function nguoidung()
+    public function nguoiDung()
     {
         return $this->belongsTo(NguoiDung::class, 'Ma_ND', 'Ma_ND');
     }

@@ -12,11 +12,11 @@ use App\Http\Controllers\API\DanhGiaController; // Import DanhGiaController - Tr
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CookbookController;
 use App\Http\Controllers\API\DanhMucController;
-use App\Http\Controllers\API\QuanLyController;
 use App\Http\Controllers\API\NguoiDungController;
 use App\Http\Controllers\API\KhachController;
 use App\Http\Controllers\API\KiemDuyetController;
 use App\Http\Controllers\API\BlogController;
+use App\Http\Controllers\API\DashboardController;
 
 // 1. PUBLIC ROUTES (KHÔNG CẦN ĐĂNG NHẬP)
 
@@ -26,8 +26,11 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // 16/01/2026 - Thi - công thức cho trang chủ
 Route::get('/cong-thuc/mon-moi', [CongThucController::class, 'layDSCongThucMoi']);
+
 Route::get('/cong-thuc/mon-noi-bat', [CongThucController::class, 'layDSCongThucNoiBat']);
+
 Route::get('/cong-thuc/mien-noi-bat/{mien}', [CongThucController::class, 'layCongThucNoiBatTheoMien']);
+
 // Thảo - danh sách công thức
 Route::get('/cong-thuc', [CongThucController::class, 'index']);
 
@@ -44,6 +47,8 @@ Route::post('/ai-chat', [AIChatController::class, 'chat']);
 
 // Thi - Danh sách Blog
 Route::get('/blog', [BlogController::class, 'layDSBlog']);
+
+
 // Thi - Chi tiết Blog
 Route::get('/blog/{id}', [BlogController::class, 'layChiTietBlog']);
 
@@ -51,7 +56,9 @@ Route::get('/blog/{id}', [BlogController::class, 'layChiTietBlog']);
 Route::get('/binh-luan-blog/{maBlog}', [BinhLuanBlogController::class, 'index']);
 
 //Trâm- API tìm kiếm công thức
-Route::get('/tim-kiem', [TimKiemController::class, 'timKiem']);
+Route::get('/tim-kiem', [CongThucController::class, 'timKiem']);
+// Trâm - API lấy danh sách đánh giá của một công thức
+Route::get('/danh-gia/danh-sach/{maCongThuc}', [DanhGiaController::class, 'layDanhGia']);
 
 
 // 2. PROTECTED ROUTES (YÊU CẦU ĐĂNG NHẬP - Token)
@@ -60,7 +67,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // A. NHÓM API ADMIN (Chỉ VaiTro = 0 mới gọi được)
     Route::prefix('admin')->middleware('role:0')->group(function () {
-
 
         Route::get('danh-muc', [DanhMucController::class, 'index']);
 
@@ -74,30 +80,26 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/duyet-blog', [KiemDuyetController::class, 'layDanhSachBlog']);
 
-
         // 2. Xử lý duyệt hoặc từ chối bài viết
         // URL: POST /api/admin/duyet-blog/xu-ly
         Route::post('/duyet-blog/xu-ly', [KiemDuyetController::class, 'xuLyDuyetBlog']);
 
-        
+        // Thảo - Doashboard
+        Route::get('/dashboard', [DashboardController::class, 'index']);
     });
+
+
     // B. NHÓM API NGƯỜI DÙNG (Cả admin và user đều có quyền sử dụng các chức năng trên)
 
     Route::prefix('user')->middleware('role:1,0')->group(function () {
 
     // 1. Thông tin cá nhân & Tài khoản
 
-
-
-
-
     // 2. Quản lý Công thức cá nhân (My Recipes)
 
-
-
-
-    // Thảo - Thêm công thức
-        Route::post('/them-cong-thuc', [CongThucController::class, 'themCongThuc']);
+        // Công thức
+        // Thảo - Thêm công thức
+        Route::post('cong-thuc/them-cong-thuc', [CongThucController::class, 'themCongThuc']);
 
         // Thảo - Danh sách công thức của người dùng
         Route::get('/cong-thuc', [CongThucController::class, 'CongThucCuaToi']);
@@ -108,10 +110,19 @@ Route::middleware('auth:sanctum')->group(function () {
         // Thảo - Xóa công thức
         Route::post('/cong-thuc/xoa-cong-thuc/{Ma_CT}', [CongThucController::class, 'xoaCongThuc']);
 
-        // 2. Quản lý Công thức cá nhân (My Recipes)
+        // Thảo - Lịch sử công thức đã xem
+        Route::get('/cong-thuc/lich-su-xem', [CongThucController::class, 'layDsDaXem']);
+
+        // Người dùng
+
+        // Thảo - Xem hồ sơ cá nhân
+        Route::get('/ho-so', [NguoiDungController::class, 'layThongTinCaNhan']);
+
+        // Thảo - Cập nhật hồ sơ cá nhân
+        Route::post('/ho-so/cap-nhat', [NguoiDungController::class, 'capNhatHoSo']);
 
 
-        // 3. Quản lý Blog cá nhân
+        // Quản lý Blog cá nhân
 
         // Thi - Thêm blog
         Route::post('/them-blog', [BlogController::class, 'themBlog']);
@@ -124,6 +135,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cookbook/tao-cookbook', [CookbookController::class, 'store']);
 
         Route::put('/cookbook/{id}', [CookbookController::class, 'destroy']);
+
         Route::get('/cookbook/chi-tiet/{id}', [CookbookController::class, 'show']);
 
         // 5. Thêm công thức vào cookbook
@@ -138,10 +150,14 @@ Route::middleware('auth:sanctum')->group(function () {
  
         // Trâm - API Bình luận Blog
         Route::post('/binh-luan-blog', [BinhLuanBlogController::class, 'store']);
+
         Route::put('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'update']);
+
+        Route::delete('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'destroy']);
+        
         Route::delete('/binh-luan-blog/{id}', [BinhLuanBlogController::class, 'destroy']);       
         // Trâm - API Đánh giá Công thức
         Route::post('/danh-gia', [DanhGiaController::class, 'danhGia']);
-        Route::get('/danh-gia/{maCongThuc}', [DanhGiaController::class, 'layDanhGiaCuaToi']);
+        Route::get('/danh-gia/cua-toi/{maCongThuc}', [DanhGiaController::class, 'layDanhGiaCuaToi']);
     });
 });

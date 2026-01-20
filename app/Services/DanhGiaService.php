@@ -1,10 +1,11 @@
 <?php
 
 namespace App\Services;
-use Illuminate\Support\Facades\DB; // <--- THÊM DÒNG NÀY
+
+use Illuminate\Support\Facades\DB;
 use App\Models\DanhGia;
 use App\Models\CongThuc;
-use App\Events\DanhGiaMoi; // Import Event vừa tạo
+use App\Events\DanhGiaMoi;
 use Illuminate\Support\Facades\Auth;
 use Exception;
 
@@ -17,45 +18,48 @@ class DanhGiaService
         $maCongThuc = $data['Ma_CT'];
         $soSao = $data['SoSao'];
 
-        // 1. Thêm hoặc Sửa (Update if exists, Insert if new)
-        $danhGia = DanhGia::updateOrCreate(
-            [
-                'Ma_ND' => $userId, 
-                'Ma_CT' => $maCongThuc
-            ],
-            [
-                'SoSao' => $soSao
-            ]
-        );
+        // Sử dụng Transaction để đảm bảo an toàn dữ liệu
+        return DB::transaction(function () use ($userId, $maCongThuc, $soSao) {
+            
+            // 1. Thêm hoặc Sửa
+            $danhGia = DanhGia::updateOrCreate(
+                [
+                    'Ma_ND' => $userId, 
+                    'Ma_CT' => $maCongThuc
+                ],
+                [
+                    'SoSao' => $soSao,
+                    // Nếu bạn muốn lưu cả nội dung bình luận, hãy thêm vào đây
+                    'NoiDung' => $data['NoiDung'] ?? null 
+                ]
+            );
 
-        // 2. Tính lại trung bình sao ngay lập tức
-        $trungBinhMoi = $this->capNhatTrungBinhSao($maCongThuc);
+            // 2. Tính lại trung bình sao ngay lập tức
+            $trungBinhMoi = $this->capNhatTrungBinhSao($maCongThuc);
 
-        // 3. 🔥 REALTIME: Bắn sự kiện cho mọi người biết
-        // Dùng toOthers() để không bắn ngược lại cho người vừa bấm (tránh lag UI)
-        broadcast(new DanhGiaMoi($maCongThuc, $trungBinhMoi))->toOthers();
+            // 3. 🔥 REALTIME: Bắn sự kiện
+            broadcast(new DanhGiaMoi($maCongThuc, $trungBinhMoi))->toOthers();
 
-        return [
-            'danh_gia' => $danhGia,
-            'trung_binh_moi' => $trungBinhMoi
-        ];
+            return [
+                'danh_gia' => $danhGia,
+                'trung_binh_moi' => $trungBinhMoi
+            ];
+        });
     }
 
     // Hàm phụ: Tính toán và lưu vào bảng CongThuc
-   public function capNhatTrungBinhSao($maCongThuc)
-{
-    // 1. Tính trung bình cộng cột 'SoSao' trong bảng 'danhgia' của món ăn này
-    $avg = DB::table('danhgia')
-             ->where('Ma_CT', $maCongThuc)
-             ->avg('SoSao');
+    public function capNhatTrungBinhSao($maCongThuc)
+    {
+        // 1. Tính trung bình cộng dùng Model cho sạch code
+        $avg = DanhGia::where('Ma_CT', $maCongThuc)->avg('SoSao');
 
-             $finalAvg = round($avg, 1);
-    // 2. Cập nhật kết quả vào cột 'TrungBinhSao' của bảng 'congthuc'
-    DB::table('congthuc')
-      ->where('Ma_CT', $maCongThuc)
-      ->update(['TrungBinhSao' => $finalAvg]); // Làm tròn 1 chữ số thập phân
-      return $finalAvg;
-}
+        $finalAvg = round($avg, 1);
+
+        // 2. Cập nhật vào bảng công thức
+        CongThuc::where('Ma_CT', $maCongThuc)->update(['TrungBinhSao' => $finalAvg]);
+        
+        return $finalAvg;
+    }
 
     // Hàm lấy đánh giá của user (để hiện màu sao cũ)
     public function layDanhGiaCuaUser($maCongThuc)

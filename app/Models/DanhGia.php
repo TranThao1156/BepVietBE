@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\NguoiDung;
 
 class DanhGia extends Model
 {
@@ -18,11 +19,13 @@ class DanhGia extends Model
 
     public function congThuc()
     {
-        return $this->belongsTo(CongThuc::class, 'Ma_CT');
+        // Trâm - đã sửa: chỉ rõ khóa ngoại/khóa chính cho quan hệ công thức
+        return $this->belongsTo(CongThuc::class, 'Ma_CT', 'Ma_CT');
     }
 
     public function nguoiDung()
     {
-        return $this->belongsTo(User::class, 'Ma_ND');
+        // Trâm - đã sửa: trả về đúng model NguoiDung (không phải User) để load HoTen/AnhDaiDien
+        return $this->belongsTo(NguoiDung::class, 'Ma_ND', 'Ma_ND');
     }
 }
