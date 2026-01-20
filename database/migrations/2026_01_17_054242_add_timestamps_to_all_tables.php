@@ -12,24 +12,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $tables = DB::select('SHOW TABLES');
-        $dbName = DB::getDatabaseName();
+        // $tables = DB::select('SHOW TABLES');
+        // $dbName = DB::getDatabaseName();
 
-        foreach ($tables as $table) {
-            $tableName = $table->{"Tables_in_$dbName"};
+        // foreach ($tables as $table) {
+        //     $tableName = $table->{"Tables_in_$dbName"};
 
-            // Bỏ qua bảng migrations
-            if ($tableName === 'migrations') continue;
+        //     // Bỏ qua bảng migrations
+        //     if ($tableName === 'migrations') continue;
 
-            Schema::table($tableName, function (Blueprint $table) {
-                if (!Schema::hasColumn($table->getTable(), 'created_at')) {
-                    $table->timestamp('created_at')->nullable();
-                }
-                if (!Schema::hasColumn($table->getTable(), 'updated_at')) {
-                    $table->timestamp('updated_at')->nullable();
-                }
-            });
-        }
+        //     Schema::table($tableName, function (Blueprint $table) {
+        //         if (!Schema::hasColumn($table->getTable(), 'created_at')) {
+        //             $table->timestamp('created_at')->nullable();
+        //         }
+        //         if (!Schema::hasColumn($table->getTable(), 'updated_at')) {
+        //             $table->timestamp('updated_at')->nullable();
+        //         }
+        //     });
+        // }
     }
 
     /**

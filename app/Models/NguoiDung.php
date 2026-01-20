@@ -37,4 +37,15 @@ class NguoiDung extends Authenticatable
     {
         return $this->hasMany(CongThuc::class, 'Ma_ND');
     }
+
+    public function blog()
+    {
+        return $this->hasMany(Blog::class, 'Ma_ND', 'Ma_ND');
+    }
+
+    public function lichSuXem()
+    {
+        return $this->belongsToMany(CongThuc::class, 'lichsuxem', 'Ma_ND', 'Ma_CT')
+            ->withPivot('ThoiGianXem');
+    }
 }
