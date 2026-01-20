@@ -39,7 +39,7 @@ class BinhLuan extends Model
     //Khanh - Lấy danh sách các câu trả lời (Con) của bình luận này
     public function replies()
     {
-        return $this->hasMany(BinhLuan::class, 'parent_id', 'Ma_BL')
+        return $this->hasMany(BinhLuan::class, 'Parent_ID', 'Ma_BL')
                     ->with(['nguoiDung', 'replies']); // Đệ quy ở đây
     }
     

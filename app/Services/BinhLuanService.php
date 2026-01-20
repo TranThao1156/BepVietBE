@@ -12,12 +12,12 @@ class BinhLuanService
     {
         $userId = Auth::user()->Ma_ND;
         $maCT   = (int) $data['Ma_CT'];
-        $Parent_ID = null;
+        $parent_id = null;
 
         if (isset($data['Parent_ID']) && $data['Parent_ID'] !== null && $data['Parent_ID'] !== '') {
-            $Parent_ID = (int) $data['Parent_ID'];
+            $parent_id = (int) $data['Parent_ID'];
 
-            $parent = BinhLuan::find($Parent_ID);
+            $parent = BinhLuan::find($parent_id);
             if (!$parent) {
                 throw new Exception("Bình luận cha không tồn tại.", 404);
             }
@@ -35,7 +35,7 @@ class BinhLuanService
             'LoaiBL'    => 1,
             'TrangThai' => 1,
             'Ma_Blog'   => null,
-            'Parent_ID' => $Parent_ID,
+            'Parent_ID' => $parent_id,
         ]);
 
         return $binhLuan;
