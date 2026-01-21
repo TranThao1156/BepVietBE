@@ -209,7 +209,7 @@ class CongThucController extends Controller
 
         // Gọi Service
         $data = $this->congThucService->LayDsCongThucByUser($user->Ma_ND, $limit);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Lấy danh sách công thức của bạn thành công',
@@ -272,6 +272,18 @@ class CongThucController extends Controller
         // Lấy mã người dùng
         $user = $request->user();
         if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
+
+        $recipe = CongThuc::find($id);
+
+        if (!$recipe) {
+            return response()->json(['error' => 'Công thức không tồn tại'], 404);
+        }
+
+        // KIỂM TRA QUYỀN SỞ HỮU (Quan trọng nhất)
+        if ((int)$recipe->Ma_ND !== (int)$user->Ma_ND) {
+            return response()->json(['error' => 'Không có quyền sửa bài này'], 403);
+        }
+
 
         $request->validate($this->getValidationRules());
 
