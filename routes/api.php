@@ -173,7 +173,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/cookbook/tao-cookbook', [CookbookController::class, 'store']);
 
-        Route::put('/cookbook/{id}', [CookbookController::class, 'destroy']);
+        Route::put('/cookbook/{id}/xoa', [CookbookController::class, 'destroy']);
 
 
         Route::get('/cookbook/chi-tiet/{id}', [CookbookController::class, 'show']);
@@ -182,7 +182,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::put('/cookbook/{id}', [CookbookController::class, 'update']);
 
-        // 5. Thêm công thức vào cookbook
+        Route::get('/cookbooks/cua-toi', [CookbookController::class, 'myCookbooks']);
+
+        Route::post('/cookbooks/them-mon', [CookbookController::class, 'themMonVaoCookbook']);
 
         //Khanh - Đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
