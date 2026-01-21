@@ -106,4 +106,19 @@ class QuanLyNguoiDungService
         return $this->layChiTietNguoiDung($maND);
     }
 
+    // Thi - Xoá người dùng ( xoá mềm chuyển trạng thái 1->0
+    public function xoaNguoiDung($maND)
+    {
+        $user = NguoiDung::where('TrangThai', 1)
+            ->findOrFail($maND);
+
+        $user->TrangThai = 0;
+        $user->save();
+
+        return [
+            'Ma_ND'   => $user->Ma_ND
+        ];
+    }
+
+
 }

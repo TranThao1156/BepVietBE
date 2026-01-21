@@ -4,6 +4,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\NguoiDung;
 use App\Services\QuanLyNguoiDungService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 
 class QuanLyController extends Controller
 {
@@ -58,6 +60,26 @@ class QuanLyController extends Controller
             'message' => 'Cập nhật thông tin người dùng thành công',
             'data' => $data
         ]);;
+    }
+    // Thi - Xoá người dùng 
+    public function xoaNguoiDung(Request $request, $id)
+    {
+        try {
+
+            $result = $this->nguoiDungService->xoaNguoiDung($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Xoá người dùng thành công',
+                'data' => $result
+            ], 200);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 404);
+        }
     }
 
 }
