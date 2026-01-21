@@ -97,6 +97,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // URL: POST /api/admin/duyet-blog/xu-ly
         Route::post('/duyet-blog/xu-ly', [KiemDuyetController::class, 'xuLyDuyetBlog']);
 
+        // Trâm - đã thêm: kiểm duyệt công thức (tương tự duyệt blog)
+        Route::get('/duyet-cong-thuc', [KiemDuyetController::class, 'layDanhSachCongThuc']);
+        Route::post('/duyet-cong-thuc/xu-ly', [KiemDuyetController::class, 'xuLyDuyetCongThuc']);
+
         // Thảo - Doashboard
         Route::get('/dashboard', [DashboardController::class, 'index']);
 

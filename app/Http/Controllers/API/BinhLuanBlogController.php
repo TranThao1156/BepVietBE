@@ -32,7 +32,10 @@ class BinhLuanBlogController extends Controller
             $data = $this->service->themBinhLuan($request->all());
             return response()->json(['success' => true, 'message' => 'Đã gửi bình luận', 'data' => $data]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            // Trâm - đã thêm: trả đúng HTTP status (403/404/...) theo Exception code thay vì luôn 500
+            $code = (int) $e->getCode();
+            $status = ($code >= 400 && $code < 600) ? $code : 500;
+            return response()->json(['success' => false, 'message' => $e->getMessage()], $status);
         }
     }
 
@@ -51,7 +54,10 @@ class BinhLuanBlogController extends Controller
             $data = $this->service->suaBinhLuan($id, $request->NoiDungBL);
             return response()->json(['success' => true, 'message' => 'Đã sửa bình luận', 'data' => $data]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            // Trâm - đã thêm: trả đúng HTTP status (403/404/...) theo Exception code thay vì luôn 500
+            $code = (int) $e->getCode();
+            $status = ($code >= 400 && $code < 600) ? $code : 500;
+            return response()->json(['success' => false, 'message' => $e->getMessage()], $status);
         }
     }
 
@@ -62,6 +68,7 @@ class BinhLuanBlogController extends Controller
             $this->service->xoaBinhLuan($id);
             return response()->json(['success' => true, 'message' => 'Đã xóa bình luận']);
         } catch (\Exception $e) {
+            // Trâm - đã thêm: trả đúng HTTP status (403/404/...) theo Exception code thay vì luôn 500
             $code = (int) $e->getCode();
             $status = ($code >= 400 && $code < 600) ? $code : 500;
             return response()->json(['success' => false, 'message' => $e->getMessage()], $status);
@@ -78,10 +85,13 @@ class BinhLuanBlogController extends Controller
                 'data' => $data
             ]);
         } catch (\Exception $e) {
+            // Trâm - đã thêm: trả đúng HTTP status (403/404/...) theo Exception code thay vì luôn 500
+            $code = (int) $e->getCode();
+            $status = ($code >= 400 && $code < 600) ? $code : 500;
             return response()->json([
                 'success' => false, 
                 'message' => $e->getMessage()
-            ], 500);
+            ], $status);
         }
     }
 }

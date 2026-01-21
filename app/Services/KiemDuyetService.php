@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Blog;
+use App\Models\CongThuc;
 
 class KiemDuyetService
 {
@@ -21,6 +22,27 @@ class KiemDuyetService
         return Blog::where('TrangThaiDuyet', $trangThaiDB)
                    ->orderBy('created_at', 'desc')
                    ->get();
+    }
+
+    // Trâm - đã thêm: lấy danh sách công thức theo trạng thái duyệt (giống duyệt blog)
+    public function layDanhSachCongThuc($trangThaiFrontend)
+    {
+        // Trâm - đã thêm: map trạng thái giống duyệt blog
+        $mapTrangThai = [
+            'pending'  => 'Chờ duyệt',
+            'approved' => 'Chấp nhận',
+            'rejected' => 'Từ chối'
+        ];
+
+        $trangThaiDB = $mapTrangThai[$trangThaiFrontend] ?? 'Chờ duyệt';
+
+        return CongThuc::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
+            ->where('TrangThaiDuyet', $trangThaiDB)
+            // Trâm - đã sửa: sắp xếp giống kiểm duyệt bài viết (ưu tiên mới nhất theo created_at)
+            // ->orderBy('created_at', 'desc')
+            // Trâm - đã thêm: nếu trùng created_at thì ưu tiên mã nhỏ hơn
+            ->orderBy('Ma_CT', 'asc')
+            ->get();
     }
 
     public function capNhatTrangThai($maBlog, $hanhDong)
@@ -49,6 +71,35 @@ class KiemDuyetService
             'thanh_cong' => true,
             'thong_bao'  => 'Cập nhật thành công',
             'du_lieu'    => $baiViet
+        ];
+    }
+
+    // Trâm - đã thêm: xử lý duyệt/từ chối công thức
+    public function capNhatTrangThaiCongThuc($maCT, $hanhDong)
+    {
+        $congThuc = CongThuc::find($maCT);
+
+        if (!$congThuc) {
+            return [
+                'thanh_cong' => false,
+                'thong_bao'  => 'Không tìm thấy công thức'
+            ];
+        }
+
+        if ($hanhDong === 'approve') {
+            $congThuc->TrangThaiDuyet = 'Chấp nhận';
+            $congThuc->TrangThai = 1;
+        } elseif ($hanhDong === 'reject') {
+            $congThuc->TrangThaiDuyet = 'Từ chối';
+            $congThuc->TrangThai = 0;
+        }
+
+        $congThuc->save();
+
+        return [
+            'thanh_cong' => true,
+            'thong_bao'  => 'Cập nhật thành công',
+            'du_lieu'    => $congThuc
         ];
     }
 }
