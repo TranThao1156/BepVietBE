@@ -75,7 +75,6 @@ class CongThucController extends Controller
     public function layDSCongThucMoi()
     {
         $data = $this->congThucService->layDSCongThucMoi();
-        $data = $this->congThucService->layDSCongThucMoi();
 
         return response()->json([
             'success' => true,
