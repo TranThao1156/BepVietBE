@@ -72,14 +72,15 @@ class BinhLuanBlogController extends Controller
             // Gọi hàm từ BinhLuanBlogService
             $data = $this->service->layDanhSachBinhLuan($maBlog);
             return response()->json([
-                'success' => true, 
+                'success' => true,
                 'data' => $data
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => $e->getMessage()
             ], 500);
         }
     }
+    
 }
