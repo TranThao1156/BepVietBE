@@ -57,8 +57,10 @@ class BinhLuanBlogService
         if (!$binhLuan) throw new Exception("Không tìm thấy bình luận.", 404);
 
         $user = Auth::user();
+        // Trâm - đã sửa: dự án dùng khóa chính Ma_ND (không phải id) nên phải lấy đúng userId
+        $userId = $user?->Ma_ND ?? Auth::id();
         // Check: Chính chủ HOẶC Admin (VaiTro=0) mới được xóa
-        if ($binhLuan->Ma_ND !== $user->id && $user->VaiTro !== 0) {
+        if ($binhLuan->Ma_ND !== $userId && $user->VaiTro !== 0) {
             throw new Exception("Không có quyền xóa.", 403);
         }
 

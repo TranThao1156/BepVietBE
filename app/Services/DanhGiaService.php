@@ -14,7 +14,8 @@ class DanhGiaService
     // HÀM XỬ LÝ ĐÁNH GIÁ (Gộp chung Thêm & Sửa)
     public function xuLyDanhGia($data)
     {
-        $userId = Auth::id();
+        // Trâm - đã sửa: hệ thống dùng khóa chính Ma_ND
+        $userId = Auth::user()?->Ma_ND ?? Auth::id();
         $maCongThuc = $data['Ma_CT'];
         $soSao = $data['SoSao'];
 
@@ -64,8 +65,20 @@ class DanhGiaService
     // Hàm lấy đánh giá của user (để hiện màu sao cũ)
     public function layDanhGiaCuaUser($maCongThuc)
     {
-        return DanhGia::where('Ma_ND', Auth::id())
+        // Trâm - đã sửa: hệ thống dùng khóa chính Ma_ND
+        $userId = Auth::user()?->Ma_ND ?? Auth::id();
+
+        return DanhGia::where('Ma_ND', $userId)
                       ->where('Ma_CT', $maCongThuc)
                       ->first();
+    }
+
+    // Trâm - đã sửa: API public lấy danh sách đánh giá theo công thức
+    public function layDanhSachDanhGia($maCongThuc)
+    {
+        return DanhGia::with(['nguoidung:Ma_ND,HoTen,AnhDaiDien'])
+            ->where('Ma_CT', $maCongThuc)
+            ->orderByDesc('Ma_DG')
+            ->get();
     }
 }

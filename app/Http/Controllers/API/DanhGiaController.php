@@ -51,6 +51,23 @@ class DanhGiaController extends Controller
         ]);
     }
 
+    // Trâm - đã sửa: API public lấy danh sách đánh giá của một công thức
+    public function layDanhGia($maCongThuc)
+    {
+        try {
+            $data = $this->danhGiaService->layDanhSachDanhGia($maCongThuc);
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     // API quan trọng: Lấy chi tiết công thức kèm DANH SÁCH NGƯỜI ĐÁNH GIÁ
     public function show($id) {
         $recipe = CongThuc::with([
