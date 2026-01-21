@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Services;
 
 use App\Models\BuocThucHien;
@@ -20,6 +21,7 @@ class CongThucService
         return CongThuc::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
             ->where('TrangThai', 1)
             ->where('TrangThaiDuyet', "Chấp nhận")
+            ->where('TrangThaiDuyet', "Chấp nhận")
             ->orderBy('created_at', 'desc')
             ->take(4)
             ->get();
@@ -29,6 +31,7 @@ class CongThucService
     {
         return CongThuc::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
             ->where('TrangThai', 1)
+            ->where('TrangThaiDuyet', "Chấp nhận")
             ->where('TrangThaiDuyet', "Chấp nhận")
             ->orderBy('SoLuotXem', 'desc')
             ->take(4)
@@ -416,5 +419,26 @@ class CongThucService
         }
 
         return $query->paginate(6);
+    }
+
+    //Khanh - Hiển thị bình luận công thức
+    public function showBinhLuan($id)
+    {
+        $congThuc = CongThuc::with([
+            'nguoidung:Ma_ND,HoTen,AnhDaiDien',
+
+            // LẤY BÌNH LUẬN + NGƯỜI DÙNG
+            'binh_luan' => function ($query) {
+                $query->where('TrangThai', 1)
+                    ->orderBy('created_at', 'desc');
+            },
+            'binh_luan.nguoiDung:Ma_ND,HoTen,AnhDaiDien'
+        ])->find($id);
+
+        if (!$congThuc) {
+            throw new \Exception("Không tìm thấy công thức.");
+        }
+
+        return $congThuc;
     }
 }

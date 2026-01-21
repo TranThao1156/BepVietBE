@@ -18,7 +18,7 @@ class BinhLuan extends Model
         'NoiDungBL',
         'Parent_ID', // <---Trâm -  THÊM DÒNG NÀY để khớp với Service
         'LoaiBL',
-        'TrangThai'
+        'TrangThai',
     ];
 
     // Quan hệ với Blog
@@ -29,23 +29,31 @@ class BinhLuan extends Model
     // Quan hệ với Người dùng
     public function nguoiDung()
     {
-        return $this->belongsTo(NguoiDung::class, 'Ma_ND', 'Ma_ND');    
+        return $this->belongsTo(NguoiDung::class, 'Ma_ND', 'Ma_ND');
     }
     // Quan hệ với Công thức
     public function congThuc()
     {
-        return $this->belongsTo(CongThuc::class, 'Ma_CT', 'Ma_CT');    
+        return $this->belongsTo(CongThuc::class, 'Ma_CT', 'Ma_CT');
     }
-
+    //Khanh - Lấy danh sách các câu trả lời (Con) của bình luận này
+    public function replies()
+    {
+        return $this->hasMany(BinhLuan::class, 'Parent_ID', 'Ma_BL')
+                    ->with(['nguoiDung', 'replies']); // Đệ quy ở đây
+    }
+    
     //Trâm - Quan hệ trả lời bình luận (Self-Referential Relationship)
     public function parent()
     {
         return $this->belongsTo(BinhLuan::class, 'Parent_ID', 'Ma_BL');
-    }   
+    } 
+
     // Trâm - Quan hệ lấy các câu trả lời của bình luận này (Bình luận con)
-    public function replies()
-    {
-        // Một bình luận gốc (parent) có nhiều câu trả lời (children)
-        return $this->hasMany(BinhLuan::class, 'Parent_ID', 'Ma_BL');
-    }
+    // public function replies()
+    // {
+    //     // Một bình luận gốc (parent) có nhiều câu trả lời (children)
+    //     return $this->hasMany(BinhLuan::class, 'Parent_ID', 'Ma_BL');
+    // }
+
 }

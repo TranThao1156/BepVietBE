@@ -37,5 +37,9 @@ class Blog extends Model
         return $this->hasMany(BinhLuan::class, 'Ma_Blog', 'Ma_Blog')
         ->where('TrangThai', 1);
     }
-    
+    // Quan hệ: Một bình luận có nhiều câu trả lời (replies)
+    public function replies()
+    {
+        return $this->hasMany(BinhLuan::class, 'parent_id', 'Ma_BL');
+    }
 }
