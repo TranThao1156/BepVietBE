@@ -108,10 +108,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('user')->middleware('role:1,0')->group(function () {
 
-        // 1. Thông tin cá nhân & Tài khoản
-
-        // 2. Quản lý Công thức cá nhân (My Recipes)
-
+        Route::get('/thong-bao/so-luong', [KiemDuyetController::class, 'demThongBaoChuaDoc']);
         // Công thức
         // Thảo - Thêm công thức
         Route::post('cong-thuc/them-cong-thuc', [CongThucController::class, 'themCongThuc']);
