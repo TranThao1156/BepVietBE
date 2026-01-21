@@ -179,19 +179,35 @@ class CongThucController extends Controller
     // Thảo - Chi tiết công thức
     public function show($id, Request $request)
     {
-        $congThuc = $this->congThucService->chiTietCongThuc($id);
-        $this->congThucService->tangLuotXem($id, $request);
+        try {
+            $congThuc = $this->congThucService->chiTietCongThuc($id);
+            $this->congThucService->tangLuotXem($id, $request);
 
-        $user = $request->user('sanctum'); // Kiểm tra user token
+            $user = $request->user('sanctum'); // Kiểm tra user token
 
-        if ($user) {
-            $this->congThucService->ghiNhanLichSuXem($user->Ma_ND, $id);
+            if ($user) {
+                $this->congThucService->ghiNhanLichSuXem($user->Ma_ND, $id);
+            }
+
+            return response()->json([
+                'message' => 'Lấy chi tiết công thức thành công',
+                'data' => $congThuc
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Lỗi không tìm thấy ID trong DB
+            return response()->json([
+                'success' => false,
+                'message' => 'Công thức không tồn tại'
+            ], 404);
+        } catch (\Exception $e) {
+            // Lỗi do Service ném ra (Bài chưa duyệt, v.v...)
+            // Mã lỗi 404 để bảo mật (giấu bài chưa duyệt đi) hoặc 403 nếu muốn báo cấm truy cập
+            $code = $e->getCode() == 404 ? 404 : 400;
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() // "Công thức không tồn tại hoặc chưa được công khai."
+            ], $code);
         }
-
-        return response()->json([
-            'message' => 'Lấy chi tiết công thức thành công',
-            'data' => $congThuc
-        ]);
     }
 
     // Thảo - Lấy danh sách công thức theo người dùng (Đang đăng nhập)

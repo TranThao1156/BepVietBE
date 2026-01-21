@@ -77,7 +77,21 @@ class CongThucService
             'nguyenLieu',
             'buocThucHien',
             'nguoidung',
-        ])->findOrFail($maCT);
+        ])->where('TrangThai', 1)
+        ->findOrFail($maCT);
+
+        // Lấy user hiện tại (Nếu có)
+        $user = auth('sanctum')->user();
+
+        $isPublished = $congThuc->TrangThaiDuyet === 'Chấp nhận';
+        $isOwner = $user && $user->Ma_ND == $congThuc->Ma_ND;
+        $isAdmin = $user && $user->VaiTro == 0; // 0 là Admin
+
+        // Nếu bài chưa duyệt VÀ người xem không phải chủ bài VÀ không phải Admin
+        if (!$isPublished && !$isOwner && !$isAdmin) {
+            // Ném ra lỗi để Controller bắt được
+            throw new \Exception('Công thức không tồn tại hoặc chưa được công khai.', 404);
+        }
 
         // Trâm - đã sửa: theo logic chuẩn kiểm duyệt, công thức chưa duyệt/đã từ chối không được trả danh sách đánh giá
         // (tránh FE vẫn hiển thị đánh giá từ payload chi tiết công thức)
