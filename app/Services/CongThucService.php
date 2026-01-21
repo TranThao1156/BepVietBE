@@ -77,12 +77,22 @@ class CongThucService
             'nguyenLieu',
             'buocThucHien',
             'nguoidung',
-            // Trâm - đã sửa: nạp trước danh sách đánh giá + thông tin người đánh giá để FE hiển thị "Người dùng đã đánh giá"
-            'danhGia' => function ($q) {
-                $q->orderByDesc('Ma_DG')
-                    ->with(['nguoidung:Ma_ND,HoTen,AnhDaiDien']);
-            }
         ])->findOrFail($maCT);
+
+        // Trâm - đã sửa: theo logic chuẩn kiểm duyệt, công thức chưa duyệt/đã từ chối không được trả danh sách đánh giá
+        // (tránh FE vẫn hiển thị đánh giá từ payload chi tiết công thức)
+        if ((int) $congThuc->TrangThai !== 1 || $congThuc->TrangThaiDuyet !== 'Chấp nhận') {
+            $congThuc->setRelation('danhGia', collect());
+            $congThuc->setAttribute('TrungBinhSao', null);
+        } else {
+            // Trâm - đã sửa: chỉ nạp trước đánh giá khi công thức đã được duyệt
+            $congThuc->load([
+                'danhGia' => function ($q) {
+                    $q->orderByDesc('Ma_DG')
+                        ->with(['nguoidung:Ma_ND,HoTen,AnhDaiDien']);
+                }
+            ]);
+        }
 
         // Lấy món liên quan
         $monLienQuan = CongThuc::select('Ma_CT', 'TenMon', 'HinhAnh', 'Ma_ND', 'SoLuotXem')

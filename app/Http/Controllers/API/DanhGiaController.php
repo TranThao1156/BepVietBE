@@ -37,18 +37,52 @@ class DanhGiaController extends Controller
                 'data' => $result
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            // Trâm - đã thêm: trả đúng HTTP status (403/404/...) theo Exception code thay vì luôn 500
+            $code = (int) $e->getCode();
+            $status = ($code >= 400 && $code < 600) ? $code : 500;
+            return response()->json(['success' => false, 'message' => $e->getMessage()], $status);
         }
     }
 
     // API: Lấy đánh giá của chính người đang đăng nhập
     public function layDanhGiaCuaToi($maCongThuc)
     {
-        $danhGia = $this->danhGiaService->layDanhGiaCuaUser($maCongThuc);
-        return response()->json([
-            'rated' => $danhGia ? true : false,
-            'so_sao' => $danhGia ? $danhGia->SoSao : 0
-        ]);
+        try {
+            $danhGia = $this->danhGiaService->layDanhGiaCuaUser($maCongThuc);
+            return response()->json([
+                'rated' => $danhGia ? true : false,
+                'so_sao' => $danhGia ? $danhGia->SoSao : 0
+            ]);
+        } catch (\Exception $e) {
+            // Trâm - đã thêm: trả đúng HTTP status (403/404/...) theo Exception code
+            $code = (int) $e->getCode();
+            $status = ($code >= 400 && $code < 600) ? $code : 500;
+            return response()->json([
+                'rated' => false,
+                'so_sao' => 0,
+                'message' => $e->getMessage()
+            ], $status);
+        }
+    }
+
+    // Trâm - đã sửa: API public lấy danh sách đánh giá của một công thức
+    public function layDanhGia($maCongThuc)
+    {
+        try {
+            $data = $this->danhGiaService->layDanhSachDanhGia($maCongThuc);
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            // Trâm - đã thêm: trả đúng HTTP status (403/404/...) theo Exception code
+            $code = (int) $e->getCode();
+            $status = ($code >= 400 && $code < 600) ? $code : 500;
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], $status);
+        }
     }
 
     // API quan trọng: Lấy chi tiết công thức kèm DANH SÁCH NGƯỜI ĐÁNH GIÁ

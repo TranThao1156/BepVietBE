@@ -11,12 +11,28 @@ use Exception;
 
 class DanhGiaService
 {
+    // Trâm - đã thêm: logic chuẩn kiểm duyệt - chỉ công thức đã "Chấp nhận" mới được xem/gửi đánh giá
+    private function assertCongThucDuocPhepDanhGia(int $maCongThuc): void
+    {
+        $ct = CongThuc::select(['Ma_CT', 'TrangThai', 'TrangThaiDuyet'])->find($maCongThuc);
+        if (!$ct || (int) $ct->TrangThai !== 1) {
+            throw new Exception('Không tìm thấy công thức.', 404);
+        }
+        if ($ct->TrangThaiDuyet !== 'Chấp nhận') {
+            throw new Exception('Công thức chưa được duyệt.', 403);
+        }
+    }
+
     // HÀM XỬ LÝ ĐÁNH GIÁ (Gộp chung Thêm & Sửa)
     public function xuLyDanhGia($data)
     {
-        $userId = Auth::id();
-        $maCongThuc = $data['Ma_CT'];
+        // Trâm - đã sửa: hệ thống dùng khóa chính Ma_ND
+        $userId = Auth::user()?->Ma_ND ?? Auth::id();
+        $maCongThuc = (int) $data['Ma_CT'];
         $soSao = $data['SoSao'];
+
+        // Trâm - đã thêm: chỉ cho đánh giá khi công thức đã được duyệt
+        $this->assertCongThucDuocPhepDanhGia($maCongThuc);
 
         // Sử dụng Transaction để đảm bảo an toàn dữ liệu
         return DB::transaction(function () use ($userId, $maCongThuc, $soSao) {
@@ -64,8 +80,26 @@ class DanhGiaService
     // Hàm lấy đánh giá của user (để hiện màu sao cũ)
     public function layDanhGiaCuaUser($maCongThuc)
     {
-        return DanhGia::where('Ma_ND', Auth::id())
+        // Trâm - đã thêm: chỉ cho xem đánh giá của tôi khi công thức đã được duyệt
+        $this->assertCongThucDuocPhepDanhGia((int) $maCongThuc);
+
+        // Trâm - đã sửa: hệ thống dùng khóa chính Ma_ND
+        $userId = Auth::user()?->Ma_ND ?? Auth::id();
+
+        return DanhGia::where('Ma_ND', $userId)
                       ->where('Ma_CT', $maCongThuc)
                       ->first();
+    }
+
+    // Trâm - đã sửa: API public lấy danh sách đánh giá theo công thức
+    public function layDanhSachDanhGia($maCongThuc)
+    {
+        // Trâm - đã thêm: chỉ cho xem danh sách đánh giá khi công thức đã được duyệt
+        $this->assertCongThucDuocPhepDanhGia((int) $maCongThuc);
+
+        return DanhGia::with(['nguoidung:Ma_ND,HoTen,AnhDaiDien'])
+            ->where('Ma_CT', $maCongThuc)
+            ->orderByDesc('Ma_DG')
+            ->get();
     }
 }
