@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Blog;
 use App\Services\BlogService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 
 class BlogController extends Controller
 {
@@ -70,6 +72,7 @@ class BlogController extends Controller
         ]);
 
         // Lấy user từ token
+        /** @var \App\Models\User $user */
         $user = auth()->user();
         // Nếu chưa đăng nhập
         if (!$user) {
