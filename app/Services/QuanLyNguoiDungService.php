@@ -49,4 +49,61 @@ class QuanLyNguoiDungService
 
         return $users;
     }
+
+    // Thi - Lấy chi tiết người dùng theo Ma_ND
+    public function layChiTietNguoiDung($maND)
+    {
+        $user = NguoiDung::where('TrangThai', 1)
+            ->findOrFail($maND);
+
+        return [
+            'Ma_ND'      => $user->Ma_ND,
+            'TenTK'      => $user->TenTK,
+            'HoTen'      => $user->HoTen,
+            'Email'      => $user->Email,
+            'Sdt'        => $user->Sdt,
+            'DiaChi'     => $user->DiaChi,
+            'GioiTinh'   => $user->GioiTinh,
+            'QuocTich'   => $user->QuocTich,
+            'VaiTro'     => $user->VaiTro,
+            'AnhDaiDien' => $user->AnhDaiDien
+                ? asset('storage/img/NguoiDung/' . rawurlencode($user->AnhDaiDien))
+                : null,
+        ];
+    }
+
+    // Thi - Cập nhật thông tin người dùng theo Ma_ND
+    public function capNhatNguoiDung(Request $request, $maND)
+    {
+        $user = NguoiDung::where('TrangThai', 1)
+            ->findOrFail($maND);
+
+        // Cập nhật thông tin
+        $user->HoTen    = $request->input('HoTen', $user->HoTen);
+        $user->Email    = $request->input('Email', $user->Email);
+        $user->Sdt      = $request->input('Sdt', $user->Sdt);
+        $user->VaiTro   = $request->input('VaiTro',$user->VaiTro);
+        $user->DiaChi   = $request->input('DiaChi', $user->DiaChi);
+        $user->GioiTinh = $request->input('GioiTinh', $user->GioiTinh);
+        $user->QuocTich = $request->input('QuocTich', $user->QuocTich);
+
+        // Lưu ảnh đại diện nếu có
+        if ($request->hasFile('AnhDaiDien')) {
+            // Xóa ảnh cũ nếu có
+            if ($user->AnhDaiDien && Storage::exists('public/img/NguoiDung/' . $user->AnhDaiDien)) {
+                Storage::delete('public/img/NguoiDung/' . $user->AnhDaiDien);
+            }
+
+            // Lưu ảnh mới
+            $file = $request->file('AnhDaiDien');
+            $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/img/NguoiDung', $filename);
+            $user->AnhDaiDien = $filename;
+        }
+
+        $user->save();
+
+        return $this->layChiTietNguoiDung($maND);
+    }
+
 }

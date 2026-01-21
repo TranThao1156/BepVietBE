@@ -95,11 +95,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Thi - Lấy danh sách toàn bộ người dùng
         Route::get('/quan-ly-nguoi-dung', [QuanLyController::class, 'layDSNguoiDung']);
 
-        // Thi - Tìm kiếm người dùng theo tên hoặc email
-        // Route::get('/quan-ly-nguoi-dung/tim-kiem', [QuanLyController::class, 'timKiemNguoiDung']);
-
-        // Thi - Lọc người dùng theo vai trò
-        // Route::get('/quan-ly-nguoi-dung/loc-theo-vai-tro', [QuanLyController::class, 'locNguoiDungTheoVaiTro']);
+        // Thi - Chi tiết người dùng
+        Route::get('/quan-ly-nguoi-dung/{id}', [QuanLyController::class, 'layThongTinCaNhan']);
+        
+        // Thi - Cập nhật thông tin người dùng
+        Route::post('/quan-ly-nguoi-dung/cap-nhat/{id}', [QuanLyController::class, 'capNhatNguoiDung']);
 
     });
 

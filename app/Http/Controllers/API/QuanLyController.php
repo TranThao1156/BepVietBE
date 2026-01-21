@@ -10,68 +10,54 @@ class QuanLyController extends Controller
     protected $nguoiDungService;
 
     public function __construct(QuanLyNguoiDungService $nguoiDungService)
-        {
-            $this->nguoiDungService = $nguoiDungService;
-        }
+    {
+        $this->nguoiDungService = $nguoiDungService;
+    }
 
     // Thi - Lấy danh sách người dùng
     public function layDSNguoiDung(Request $request)
-        {
-            $tuKhoa  = $request->query('tuKhoa');
-            $vaiTro  = $request->query('vaiTro');
-            $perPage = $request->query('perPage', 10);
+    {
+        $tuKhoa  = $request->query('tuKhoa');
+        $vaiTro  = $request->query('vaiTro');
+        $perPage = $request->query('perPage', 10);
 
-            $data = $this->nguoiDungService->layDSNguoiDung(
-                $tuKhoa,
-                $vaiTro,
-                $perPage
-            );
+        $data = $this->nguoiDungService->layDSNguoiDung(
+            $tuKhoa,
+            $vaiTro,
+            $perPage
+        );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Lấy danh sách người dùng thành công',
-                'data' => $data->items(),
-                'meta' => [
-                    'current_page' => $data->currentPage(),
-                    'last_page'    => $data->lastPage(),
-                    'per_page'     => $data->perPage(),
-                    'total'        => $data->total(),
-                ]
-            ]);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy danh sách người dùng thành công',
+            'data' => $data->items(),
+            'meta' => [
+                'current_page' => $data->currentPage(),
+                'last_page'    => $data->lastPage(),
+                'per_page'     => $data->perPage(),
+                'total'        => $data->total(),
+            ]
+        ]);
+    }
+    // Thi - Lấy chi tiết người dùng
+    public function layThongTinCaNhan($id)
+    {
+        $data = $this->nguoiDungService->layChiTietNguoiDung($id);
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy chi tiết người dùng thành công',
+            'data' => $data
+        ]);;
+    }
+    // Thi - Cập nhật thông tin người dùng
+    public function capNhatNguoiDung(Request $request, $id)
+    {
+        $data = $this->nguoiDungService->capNhatNguoiDung($request, $id);
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật thông tin người dùng thành công',
+            'data' => $data
+        ]);;
+    }
 
-
-
-    // Thi - Tìm kiếm theo tên hoặc email
-    // public function timKiemNguoiDung(Request $request)
-    // {
-    //     $tuKhoa = $request->query('tuKhoa', '');
-
-    //     $data = $this->nguoiDungService->timKiemNguoiDung($tuKhoa);
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Tìm kiếm người dùng thành công',
-    //         'data' => $data
-    //     ]);
-    // }
-
-    // Thi -Lọc theo vai trò
-    // public function locNguoiDungTheoVaiTro(Request $request)
-    // {
-    //     $vaiTro = $request->query('vaiTro');
-
-    //     // không chọn vai trò → trả tất cả
-    //     if ($vaiTro === null || $vaiTro === '') {
-    //         $data = $this->nguoiDungService->layDSNguoiDung();
-    //     } else {
-    //         $data = $this->nguoiDungService->locNguoiDungTheoVaiTro($vaiTro);
-    //     }
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Lấy danh sách người dùng thành công',
-    //         'data' => $data
-    //     ]);
-    // }
 }
