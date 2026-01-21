@@ -116,9 +116,52 @@ class QuanLyNguoiDungService
         $user->save();
 
         return [
-            'Ma_ND'   => $user->Ma_ND
+            'Ma_ND'   => $user->Ma_ND,
+            'HoTen'   => $user->HoTen
         ];
     }
 
+    // Thi - Thêm người dùng
+    public function themNguoiDung(Request $request)
+    {
+        return DB::transaction(function () use ($request) {
 
+            $tenAnh = null;
+
+            if ($request->hasFile('AnhDaiDien')) {
+                $file = $request->file('AnhDaiDien');
+
+                $tenAnh = time() . '_' .
+                    Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
+                    . '.' . $file->getClientOriginalExtension();
+
+                $file->storeAs('img/NguoiDung', $tenAnh, 'public');
+            }
+
+            $user = NguoiDung::create([
+                'TenTK'      => $request->TenTK,
+                'MatKhau'    => bcrypt($request->MatKhau),
+                'HoTen'      => $request->HoTen,
+                'Email'      => $request->Email,
+                'Sdt'        => $request->Sdt,
+                'DiaChi'     => $request->DiaChi,
+                'GioiTinh'   => $request->GioiTinh,
+                'QuocTich'   => $request->QuocTich,
+                'VaiTro'     => $request->VaiTro,
+                'AnhDaiDien' => $tenAnh, // LƯU TÊN ẢNH
+                'TrangThai'  => 1
+            ]);
+
+            // Trả về dữ liệu CHUẨN cho FE
+            return [
+                'Ma_ND'      => $user->Ma_ND,
+                'HoTen'      => $user->HoTen,
+                'Email'      => $user->Email,
+                'VaiTro'     => $user->VaiTro,
+                'AnhDaiDien' => $tenAnh
+                    ? asset('storage/img/NguoiDung/' . rawurlencode($tenAnh))
+                    : null,
+            ];
+        });
+    }
 }

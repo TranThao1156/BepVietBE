@@ -104,6 +104,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Thi - Xoá người dùng
         Route::delete('/quan-ly-nguoi-dung/xoa/{id}', [QuanLyController::class, 'xoaNguoiDung']);
 
+        // Thi - Thêm tài khaonr người dùng
+        Route::post('/quan-ly-nguoi-dung/them', [QuanLyController::class, 'themNguoiDung']);
+
     });
 
 

@@ -82,4 +82,30 @@ class QuanLyController extends Controller
         }
     }
 
+    // Thi - tạo tài khoản người dùng
+    public function themNguoiDung(Request $request)
+    {
+        // Validate dữ liệu 
+        $request->validate([
+            'TenTK'   => 'required|unique:nguoidung,TenTK',
+            'Email'   => 'required|email|unique:nguoidung,Email',
+            'MatKhau' => 'required|min:6',
+            'HoTen'   => 'required',
+            'VaiTro'  => 'required|in:0,1',
+            'Sdt'     => 'required|numeric',
+        ], [
+            'required' => 'Vui lòng nhập đầy đủ các trường bắt buộc.',
+            'email'    => 'Email không đúng định dạng.',
+            'unique'   => 'Dữ liệu đã tồn tại trong hệ thống.',
+            'min'      => 'Mật khẩu phải từ 6 kí tự.',
+        ]);
+
+        $user = $this->nguoiDungService->themNguoiDung($request);
+ 
+        return response()->json([
+            'success' => true,
+            'message' => 'Tạo người dùng thành công',
+            'data'    => $user
+        ]);
+    }
 }
