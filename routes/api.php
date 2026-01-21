@@ -16,6 +16,7 @@ use App\Http\Controllers\API\KiemDuyetController;
 use App\Http\Controllers\API\BlogController;
 use App\Http\Controllers\API\BinhLuanController;
 use App\Http\Controllers\API\DashboardController;
+use App\Http\Controllers\API\QuanLyController;
 
 // 1. PUBLIC ROUTES (KHÔNG CẦN ĐĂNG NHẬP)
 
@@ -104,6 +105,24 @@ Route::middleware('auth:sanctum')->group(function () {
         // Thảo - Doashboard
         Route::get('/dashboard', [DashboardController::class, 'index']);
 
+        // 3. Quản lý người dùng
+
+        // Thi - Lấy danh sách toàn bộ người dùng
+        Route::get('/quan-ly-nguoi-dung', [QuanLyController::class, 'layDSNguoiDung']);
+
+        // Thi - Chi tiết người dùng
+        Route::get('/quan-ly-nguoi-dung/{id}', [QuanLyController::class, 'layThongTinCaNhan']);
+        
+        // Thi - Cập nhật thông tin người dùng
+        Route::post('/quan-ly-nguoi-dung/cap-nhat/{id}', [QuanLyController::class, 'capNhatNguoiDung']);
+
+        // Thi - Xoá người dùng
+        Route::delete('/quan-ly-nguoi-dung/xoa/{id}', [QuanLyController::class, 'xoaNguoiDung']);
+
+        // Thi - Thêm tài khaonr người dùng
+        Route::post('/quan-ly-nguoi-dung/them', [QuanLyController::class, 'themNguoiDung']);
+
+
         // Thảo - Xuất thống kê (Excel)
         Route::get('/dashboard/export', [DashboardController::class, 'export']);
     });
@@ -162,7 +181,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/blog-ca-nhan', [BlogController::class, 'layDSBlogCaNhan']);
 
         // Thi - Xóa blog cá nhân
-        Route::post('/xoa-blog/{id}', [BlogController::class, 'xoaBlogCaNhan']);
+        Route::delete('/xoa-blog/{id}', [BlogController::class, 'xoaBlogCaNhan']);
 
         // Thi - Lấy chi tiết blog cá nhân để sửa
         Route::get('/lay-blog-can-sua/{id}', [BlogController::class, 'layBlogDeSua']);
