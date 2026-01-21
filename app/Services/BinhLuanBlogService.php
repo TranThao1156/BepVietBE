@@ -59,8 +59,8 @@ class BinhLuanBlogService
         $user = Auth::user();
         // Trâm - đã sửa: dự án dùng khóa chính Ma_ND (không phải id) nên phải lấy đúng userId
         $userId = $user?->Ma_ND ?? Auth::id();
-        // Check: Chính chủ HOẶC Admin (VaiTro=0) mới được xóa
-        if ($binhLuan->Ma_ND !== $userId && $user->VaiTro !== 0) {
+        // Check: chỉ chính chủ bình luận mới được xóa
+        if ($binhLuan->Ma_ND !== $userId) {
             throw new Exception("Không có quyền xóa.", 403);
         }
 

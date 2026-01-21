@@ -62,7 +62,9 @@ class BinhLuanBlogController extends Controller
             $this->service->xoaBinhLuan($id);
             return response()->json(['success' => true, 'message' => 'Đã xóa bình luận']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            $code = (int) $e->getCode();
+            $status = ($code >= 400 && $code < 600) ? $code : 500;
+            return response()->json(['success' => false, 'message' => $e->getMessage()], $status);
         }
     }
     // API Lấy danh sách bình luận của 1 bài Blog
