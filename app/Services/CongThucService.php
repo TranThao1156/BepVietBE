@@ -87,17 +87,22 @@ class CongThucService
         $isOwner = $user && $user->Ma_ND == $congThuc->Ma_ND;
         $isAdmin = $user && $user->VaiTro == 0; // 0 là Admin
 
-        // Nếu bài chưa duyệt VÀ người xem không phải chủ bài VÀ không phải Admin
+        // Nếu bài chưa duyệt và người xem không phải chủ bài và không phải Admin
         if (!$isPublished && !$isOwner && !$isAdmin) {
+
+
             // Ném ra lỗi để Controller bắt được
             throw new \Exception('Công thức không tồn tại hoặc chưa được công khai.', 404);
         }
 
         // Trâm - đã sửa: theo logic chuẩn kiểm duyệt, công thức chưa duyệt/đã từ chối không được trả danh sách đánh giá
         // (tránh FE vẫn hiển thị đánh giá từ payload chi tiết công thức)
+
         if ((int) $congThuc->TrangThai !== 1 || $congThuc->TrangThaiDuyet !== 'Chấp nhận') {
             $congThuc->setRelation('danhGia', collect());
+
             $congThuc->setAttribute('TrungBinhSao', null);
+
         } else {
             // Trâm - đã sửa: chỉ nạp trước đánh giá khi công thức đã được duyệt
             $congThuc->load([
@@ -145,7 +150,7 @@ class CongThucService
             ->paginate($limit);
     }
 
-    // --- MỚI: Hàm tìm kiếm để gợi ý cho Frontend ---
+    // Thảo - Hàm tìm kiếm để gợi ý phần nguyên liệu cho Frontend
     public function timKiemNguyenLieu($keyword)
     {
         // Chuẩn hóa từ khóa tìm kiếm
