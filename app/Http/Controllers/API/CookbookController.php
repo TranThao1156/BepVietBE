@@ -45,7 +45,7 @@ class CookbookController extends Controller
         if ($request->hasFile('AnhBia')) {
             $file = $request->file('AnhBia');
             $tenAnh = time() . '_' . $file->getClientOriginalName(); 
-            $file->move(public_path('uploads/cookbooks'), $tenAnh);
+            $file->move(public_path('storage/img/CookBook'), $tenAnh);
         }
 
         // 4. Lưu vào Database
@@ -135,7 +135,7 @@ class CookbookController extends Controller
             // 2. Xử lý link ảnh bìa Cookbook
             $anhBia = $cookbook->AnhBia;
             if ($anhBia && !str_starts_with($anhBia, 'http')) {
-                $anhBia = url('uploads/cookbooks/' . $anhBia);
+                $anhBia = url('storage/img/CookBook/' . $anhBia);
             }
 
             // 3. Xử lý danh sách món ăn
@@ -144,7 +144,7 @@ class CookbookController extends Controller
                 // --- XỬ LÝ ẢNH MÓN ĂN ---
                 $img = $ct->HinhAnh;
                 if ($img && !str_starts_with($img, 'http')) {
-                    $img = url('uploads/congthuc/' . $img);
+                    $img = url('storage/img/CongThuc/' . $img);
                 }
 
                 // --- XỬ LÝ TÁC GIẢ (CÓ KIỂM TRA NULL) ---
@@ -159,7 +159,7 @@ class CookbookController extends Controller
                     if ($ct->nguoidung->AnhDaiDien) {
                         $ava = $ct->nguoidung->AnhDaiDien;
                         if (!str_starts_with($ava, 'http')) {
-                            $authorAvatar = url('uploads/user/' . $ava);
+                            $authorAvatar = url('storage/img/NguoiDung/' . $ava);
                         } else {
                             $authorAvatar = $ava;
                         }
@@ -257,7 +257,7 @@ class CookbookController extends Controller
             // Xử lý link ảnh để trả về frontend hiển thị ngay
             $anhBiaUrl = $updatedCookbook->AnhBia;
             if ($anhBiaUrl && !str_starts_with($anhBiaUrl, 'http')) {
-                $anhBiaUrl = url('uploads/cookbooks/' . $anhBiaUrl);
+                $anhBiaUrl = url('storage/img/CookBook/' . $anhBiaUrl);
             }
 
             return response()->json([

@@ -18,7 +18,7 @@ class CookbookService
         return $cookbooks->map(function ($cb) {
             $anhBia = $cb->AnhBia;
             if ($anhBia && !str_starts_with($anhBia, 'http')) {
-                $anhBia = url('uploads/cookbooks/' . $anhBia);
+                $anhBia = url('storage/img/CookBook/' . $anhBia);
             }
             return [
                 'id'            => $cb->Ma_CookBook,
@@ -37,25 +37,25 @@ class CookbookService
     public function layChiTietCookbook($cookbookId)
     {
         // 1. Chỉ lấy Cookbook và danh sách Công thức (Bỏ qua NguoiDung để tránh lỗi)
-        $cookbook = Cookbook::with('congthucs') 
-                            ->where('Ma_CookBook', $cookbookId)
-                            ->first();
+        $cookbook = Cookbook::with('congthucs')
+            ->where('Ma_CookBook', $cookbookId)
+            ->first();
 
         if (!$cookbook) return null;
 
         // 2. Xử lý ảnh bìa Cookbook
         $cookbookImg = $cookbook->AnhBia;
         if ($cookbookImg && !str_starts_with($cookbookImg, 'http')) {
-            $cookbookImg = url('uploads/cookbooks/' . $cookbookImg);
+            $cookbookImg = url('storage/img/CookBook/' . $cookbookImg);
         }
 
         // 3. Map danh sách công thức (CHỈ LẤY THÔNG TIN CƠ BẢN)
-        $formattedRecipes = $cookbook->congthucs->map(function($ct) {
-            
+        $formattedRecipes = $cookbook->congthucs->map(function ($ct) {
+
             // Xử lý ảnh món ăn
-            $img = $ct->HinhAnh; 
+            $img = $ct->HinhAnh;
             if ($img && !str_starts_with($img, 'http')) {
-                $img = url('uploads/congthuc/' . $img); 
+                $img = url('storage/img/CongThuc/' . $img);
             }
 
             return [
@@ -64,7 +64,7 @@ class CookbookService
                 'HinhAnh'      => $img ?: 'https://placehold.co/600x400?text=No+Food+Img',
                 'ThoiGianNau'  => $ct->ThoiGianNau ?? 0,
                 // Gán cứng tác giả để test, sau này sửa sau
-                'TacGia'       => 'Bếp Việt', 
+                'TacGia'       => 'Bếp Việt',
                 'AvatarTacGia' => 'https://placehold.co/100?text=U',
             ];
         });
@@ -81,7 +81,7 @@ class CookbookService
             'recipes' => $formattedRecipes
         ];
     }
-    
+
     // Hàm ẩn cookbook (giữ nguyên)
     public function anCookbook($cookbookId, $userId)
     {
@@ -94,8 +94,8 @@ class CookbookService
     {
         // 1. Tìm Cookbook (Phải thuộc về User này để đảm bảo bảo mật)
         $cookbook = Cookbook::where('Ma_CookBook', $cookbookId)
-                            ->where('Ma_ND', $userId)
-                            ->first();
+            ->where('Ma_ND', $userId)
+            ->first();
 
         if (!$cookbook) {
             return false; // Không tìm thấy hoặc không phải chủ sở hữu
@@ -111,8 +111,8 @@ class CookbookService
     {
         // 1. Tìm Cookbook
         $cookbook = Cookbook::where('Ma_CookBook', $cookbookId)
-                            ->where('Ma_ND', $userId)
-                            ->first();
+            ->where('Ma_ND', $userId)
+            ->first();
 
         if (!$cookbook) return null;
 
@@ -124,14 +124,14 @@ class CookbookService
         // 3. Xử lý Ảnh Bìa (Nếu có gửi ảnh mới lên)
         if ($fileAnh) {
             // Xóa ảnh cũ nếu có (và không phải ảnh placeholder)
-            if ($cookbook->AnhBia && file_exists(public_path('uploads/cookbooks/' . $cookbook->AnhBia))) {
-                File::delete(public_path('uploads/cookbooks/' . $cookbook->AnhBia));
+            if ($cookbook->AnhBia && file_exists(public_path('storage/img/CookBook/' . $cookbook->AnhBia))) {
+                File::delete(public_path('storage/img/CookBook/' . $cookbook->AnhBia));
             }
 
             // Lưu ảnh mới
             $tenAnh = time() . '_' . $fileAnh->getClientOriginalName();
-            $fileAnh->move(public_path('uploads/cookbooks'), $tenAnh);
-            
+            $fileAnh->move(public_path('storage/img/CookBook'), $tenAnh);
+
             // Cập nhật tên ảnh vào DB
             $cookbook->AnhBia = $tenAnh;
         }
