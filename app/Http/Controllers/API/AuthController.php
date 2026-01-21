@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\NguoiDung;
 use Illuminate\Support\Facades\Hash;
-
+//Khanh - Xử lý đăng nhập, đăng ký, đăng xuất API
 class AuthController extends Controller
 {
     public function login(Request $request)
@@ -77,5 +77,15 @@ class AuthController extends Controller
             'message' => 'Đăng ký thành công',
             
         ]);
+    }
+    public function logout(Request $request)
+    {
+        // Xóa token hiện tại mà người dùng đang dùng
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đăng xuất thành công'
+        ], 200);
     }
 }
