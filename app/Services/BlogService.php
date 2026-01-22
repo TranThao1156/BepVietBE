@@ -16,7 +16,7 @@ class BlogService
     return Blog::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
         ->where('TrangThai', 1)
         ->where('TrangThaiDuyet', 'Chấp nhận')
-        ->orderBy('created_at', 'desc')
+        // ->orderBy('created_at', 'desc')
         ->paginate(8)
         ->through(function ($blog) {
             return [
@@ -247,6 +247,47 @@ class BlogService
             $blog->save();
 
             return $blog;
+        });
+    }
+
+    // Thi - Sắp xếp Blog theo mới nhất, cũ nhất, tác giả 
+    public function sapXepBlog(Request $request)
+    {
+        $perPage = $request->integer('per_page', 8);
+        $type    = $request->get('type', 'newest'); // newest | oldest | author
+
+        $query = Blog::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
+            ->where('TrangThai', 1)
+            ->where('TrangThaiDuyet', 'Chấp nhận');
+
+        switch ($type) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            default: // newest
+                $query->orderByDesc('created_at');
+                break;
+        }
+
+        return $query->paginate($perPage)->through(function ($blog) {
+            return [
+                'Ma_Blog'  => $blog->Ma_Blog,
+                'TieuDe'   => $blog->TieuDe,
+                'Slug'     => Str::slug($blog->TieuDe) . '-' . $blog->Ma_Blog,
+                'MoTaNgan' => Str::limit(strip_tags($blog->ND_ChiTiet), 120),
+
+                'HinhAnh'  => $blog->HinhAnh
+                    ? asset('storage/img/Blog/' . rawurlencode($blog->HinhAnh))
+                    : null,
+
+                'NgayDang' => $blog->created_at,
+
+                'TacGia' => [
+                    'Ma_ND'      => $blog->nguoiDung->Ma_ND ?? null,
+                    'HoTen'      => $blog->nguoiDung->HoTen ?? '',
+                    'AnhDaiDien' => $blog->nguoiDung->AnhDaiDien ?? 'avatar.png',
+                ],
+            ];
         });
     }
 

@@ -53,9 +53,13 @@ Route::post('/ai-chat', [AIChatController::class, 'chat']);
 // Thi - Danh sách Blog
 Route::get('/blog', [BlogController::class, 'layDSBlog']);
 
+// Thi - Sắp xếp Blog 
+Route::get('/blog/sap-xep', [BlogController::class, 'sapXepBlog']);
+
 
 // Thi - Chi tiết Blog
 Route::get('/blog/{id}', [BlogController::class, 'layChiTietBlog']);
+
 
 //Trâm - API Lấy danh sách bình luận theo mã blog
 Route::get('/binh-luan-blog/{maBlog}', [BinhLuanBlogController::class, 'index']);

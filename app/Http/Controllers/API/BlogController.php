@@ -178,4 +178,23 @@ class BlogController extends Controller
         }
     }
 
+    // Thi - Sắp xếp Blog 
+    public function sapXepBlog(Request $request)
+    {
+        $data = $this->blogService->sapXepBlog($request);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy blog mới nhất thành công',
+            'data' => $data->items(),
+            'meta' => [
+                'current_page' => $data->currentPage(),
+                'last_page'    => $data->lastPage(),
+                'per_page'     => $data->perPage(),
+                'total'        => $data->total(),
+            ]
+        ]);
+    }
+
+
 }
