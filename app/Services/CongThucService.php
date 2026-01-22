@@ -175,13 +175,11 @@ class CongThucService
                 'Ma_ND' => $user->Ma_ND,
                 'TrangThai' => 1
             ]);
-
             // Thêm nguyên liệu
             foreach ($request->NguyenLieu as $nl) {
                 $tenChuanHoa = Str::ucfirst(Str::lower(trim(preg_replace('/\s+/', ' ', $nl['TenNguyenLieu']))));
                 $donViChuanHoa = Str::lower(trim($nl['DonViDo']));
-
-                // Logic này đáp ứng yêu cầu: "nhập đơn vị khác nhưng tên vẫn thế thì thêm dòng mới"
+                //  "Nhập đơn vị khác nhưng tên vẫn thế thì thêm dòng mới"
                 // Vì firstOrCreate tìm theo cả 'TenNguyenLieu' VÀ 'DonViDo'.
                 $nguyenLieu = NguyenLieu::firstOrCreate(
                     [
@@ -192,14 +190,12 @@ class CongThucService
                         'TrangThai'     => 1
                     ]
                 );
-
                 DB::table('nl_cthuc')->insert([
                     'Ma_CT'     => $congThuc->Ma_CT,
                     'Ma_NL'     => $nguyenLieu->Ma_NL,
                     'DinhLuong' => $nl['DinhLuong']
                 ]);
             }
-
             $buocData = [];
             foreach ($request->BuocThucHien as $buoc) {
                 $buocData[] = [
@@ -212,7 +208,6 @@ class CongThucService
             if (!empty($buocData)) {
                 BuocThucHien::insert($buocData);
             }
-
             return $congThuc;
         });
     }
@@ -221,11 +216,15 @@ class CongThucService
     public function tangLuotXem(int $maCT, $request): void
     {
         $user = $request->user();
+        // Xác định người xem, nếu chưa đn u_địa_chỉ_ip, nếu đã đn u_ma_ND
         $viewer = $user ? 'u_' . $user->Ma_ND : 'g_' . $request->ip();
+        // Tạo cache cho lượt xem
         $key = "view_ct_{$maCT}_{$viewer}";
 
+        // Nếu chưa có key trong cache
         if (!Cache::has($key)) {
             CongThuc::where('Ma_CT', $maCT)->increment('SoLuotXem');
+            // Lưu cache để chặn spam tỏng 10p
             Cache::put($key, true, now()->addMinutes(10));
         }
     }
@@ -258,11 +257,9 @@ class CongThucService
 
             // Xử lý Nguyên Liệu: Xóa cũ -> Thêm mới
             DB::table('nl_cthuc')->where('Ma_CT', $id)->delete();
-
             foreach ($request->NguyenLieu as $nl) {
                 $tenChuanHoa = Str::ucfirst(Str::lower(trim(preg_replace('/\s+/', ' ', $nl['TenNguyenLieu']))));
                 $donViChuanHoa = Str::lower(trim($nl['DonViDo']));
-
                 $nguyenLieu = NguyenLieu::firstOrCreate(
                     [
                         'TenNguyenLieu' => $tenChuanHoa,
@@ -272,15 +269,12 @@ class CongThucService
                         'TrangThai'     => 1
                     ]
                 );
-
                 DB::table('nl_cthuc')->insert([
                     'Ma_CT'     => $congThuc->Ma_CT,
                     'Ma_NL'     => $nguyenLieu->Ma_NL,
                     'DinhLuong' => $nl['DinhLuong']
                 ]);
             }
-
-            // Xử lý Bước Thực Hiện
             BuocThucHien::where('Ma_CT', $id)->delete();
             $buocData = [];
             foreach ($request->BuocThucHien as $buoc) {
@@ -294,7 +288,6 @@ class CongThucService
             if (!empty($buocData)) {
                 BuocThucHien::insert($buocData);
             }
-
             return $congThuc;
         });
     }

@@ -16,22 +16,15 @@ class DashboardService
 
         // 1. Tổng hợp số liệu thống kê
         $tongNguoiDung = NguoiDung::count();
-        
         $userMoiHomNay = NguoiDung::whereDate('created_at', $homNay)->count();
-        
         $tongCongThuc = CongThuc::count();
         $congThucMoi = CongThuc::whereDate('created_at', $homNay)->count();
-        
         $choPheDuyet = CongThuc::where('TrangThaiDuyet', 'Chờ duyệt')->count();
-        
         $tongLuotXem = CongThuc::sum('SoLuotXem');
-        
         $tongDanhMuc = DanhMuc::where('TrangThai', 1)->count();
-
         // 2. Dữ liệu biểu đồ
         $bieuDoUser = $this->layDuLieuBieuDoUser($filter);
-
-        // --- SỬA ĐOẠN NÀY: Trả về key tiếng Anh khớp với Frontend ---
+        // Trả về key
         return [
             'users' => [
                 'total' => $tongNguoiDung,
@@ -57,7 +50,6 @@ class DashboardService
     private function layDuLieuBieuDoUser($filter)
     {
         $chartResult = [];
-        
         // --- TRƯỜNG HỢP 1: LỌC THEO NĂM (Gom nhóm theo THÁNG) ---
         if ($filter == 'year') {
             $startOfYear = Carbon::now()->startOfYear();
@@ -82,7 +74,6 @@ class DashboardService
                     'count' => isset($data[$m]) ? $data[$m]->count : 0
                 ];
             }
-
         } 
         // --- TRƯỜNG HỢP 2: LỌC THEO NGÀY (7 ngày hoặc Tháng này) ---
         else {
@@ -95,9 +86,7 @@ class DashboardService
                 $endDate = Carbon::now();
                 $startDate = Carbon::now()->subDays(6);
             }
-
-            // Query gom nhóm theo ngày: DATE(created_at)
-            $data = NguoiDung::select(
+            $data = NguoiDung::select( // Query gom nhóm theo ngày: DATE(created_at)
                     DB::raw('DATE(created_at) as date'), 
                     DB::raw('count(*) as count')
                 )
@@ -111,24 +100,20 @@ class DashboardService
             $currentDate = $startDate->copy();
             while ($currentDate <= $endDate) {
                 $dateString = $currentDate->format('Y-m-d');
-                
                 // Tạo Label hiển thị (VD: T2 hoặc 01/01)
                 if ($filter == 'month') {
                     $label = $currentDate->format('d/m'); // VD: 01/01
                 } else {
                     $label = $this->getThuTiengViet($currentDate->dayOfWeek); // VD: T2
                 }
-
                 $chartResult[] = [
                     'date'  => $dateString,
                     'label' => $label,
                     'count' => isset($data[$dateString]) ? $data[$dateString]->count : 0
                 ];
-
                 $currentDate->addDay();
             }
         }
-
         return $chartResult;
     }
 

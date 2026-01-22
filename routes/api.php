@@ -71,10 +71,6 @@ Route::get('/tim-kiem', [CongThucController::class, 'timKiem']);
 Route::get('/danh-gia/danh-sach/{maCongThuc}', [DanhGiaController::class, 'layDanhGia']);
 
 
-
-
-
-
 // 2. PROTECTED ROUTES (YÊU CẦU ĐĂNG NHẬP - Token)
 // Khanh - Sử dụng middleware 'auth:sanctum' để bảo vệ các route và phân quyền chức năng
 Route::middleware('auth:sanctum')->group(function () {
@@ -135,10 +131,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('user')->middleware('role:1,0')->group(function () {
 
-        // 1. Thông tin cá nhân & Tài khoản
-
-        // 2. Quản lý Công thức cá nhân (My Recipes)
-
         // Công thức
         // Thảo - Thêm công thức
         Route::post('cong-thuc/them-cong-thuc', [CongThucController::class, 'themCongThuc']);
@@ -151,7 +143,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Thảo - Xóa công thức
         Route::post('/cong-thuc/xoa-cong-thuc/{Ma_CT}', [CongThucController::class, 'xoaCongThuc']);
-        //Khanh - Bình Luận công thức
+
 
 
         // Thêm bình luận (Hoặc trả lời)

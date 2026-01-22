@@ -22,7 +22,6 @@ class CongThucController extends Controller
         $this->congThucService = $congThucService;
     }
     // Validate chung cho thêm và sửa công thức
-
     private function getValidationRules()
     {
         return [
@@ -45,15 +44,12 @@ class CongThucController extends Controller
             'BuocThucHien.*.HinhAnh' => 'nullable|string',
         ];
     }
-
     // Hàm upload và chuẩn hóa file ảnh
     private function handleUploadImage(Request $request, $fieldName, $folder)
     {
         if ($request->hasFile($fieldName)) {
             $file = $request->file($fieldName);
-
             $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
-
             $file->storeAs($folder, $filename, 'public');
             return $filename;
         }
@@ -278,7 +274,6 @@ class CongThucController extends Controller
                 'image' => $filename,
             ]);
         }
-
         return response()->json(['success' => false, 'message' => 'Lỗi upload'], 400);
     }
 
@@ -295,12 +290,10 @@ class CongThucController extends Controller
             return response()->json(['error' => 'Công thức không tồn tại'], 404);
         }
 
-        // KIỂM TRA QUYỀN SỞ HỮU (Quan trọng nhất)
+        // KIỂM TRA QUYỀN SỞ HỮU
         if ((int)$recipe->Ma_ND !== (int)$user->Ma_ND) {
             return response()->json(['error' => 'Không có quyền sửa bài này'], 403);
         }
-
-
         $request->validate($this->getValidationRules());
 
         // Xử lý ảnh bìa MỚI (Nếu có)
@@ -359,6 +352,7 @@ class CongThucController extends Controller
             ], 403);
         }
     }
+    
     //Khanh - Hiển thị bình luận công thức
     public function showBinhLuan($id)
     {
