@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\BinhLuan;
+use App\Services\ThongBaoService;
 
 class CongThucController extends Controller
 {
@@ -25,23 +26,23 @@ class CongThucController extends Controller
     private function getValidationRules()
     {
         return [
-            'TenMon' => 'required|string|max:255',
-            'MoTa' => 'nullable|string',
-            'KhauPhan' => 'required|integer|min:1',
-            'DoKho' => 'required|string|min:1|max:50',
-            'ThoiGianNau' => 'required|integer|min:1',
-            'HinhAnh' => 'nullable|image|max:5120', // Giới hạn 5MB
-            'Ma_VM' => 'required|exists:vungmien,Ma_VM',
-            'Ma_LM' => 'required|exists:loaimon,Ma_LM',
-            'Ma_DM' => 'required|exists:danhmuc,Ma_DM',
-            'NguyenLieu' => 'required|array|min:1',
-            'NguyenLieu.*.TenNguyenLieu' => 'required|string|max:255',
-            'NguyenLieu.*.DonViDo' => 'required|string|max:50',
-            'NguyenLieu.*.DinhLuong' => 'required|numeric|min:0.1',
-            'BuocThucHien' => 'required|array|min:1',
-            'BuocThucHien.*.STT' => 'required|integer|min:1',
-            'BuocThucHien.*.NoiDung' => 'required|string',
-            'BuocThucHien.*.HinhAnh' => 'nullable|string',
+        'TenMon' => 'required|string|max:255',
+        'MoTa' => 'nullable|string',
+        'KhauPhan' => 'required|integer|min:1',
+        'DoKho' => 'required|string|min:1|max:50',
+        'ThoiGianNau' => 'required|integer|min:1',
+        'HinhAnh' => 'nullable|image|max:5120', // Giới hạn 5MB
+        'Ma_VM' => 'required|exists:vungmien,Ma_VM',
+        'Ma_LM' => 'required|exists:loaimon,Ma_LM',
+        'Ma_DM' => 'required|exists:danhmuc,Ma_DM',
+        'NguyenLieu' => 'required|array|min:1',
+        'NguyenLieu.*.TenNguyenLieu' => 'required|string|max:255',
+        'NguyenLieu.*.DonViDo' => 'required|string|max:50',
+        'NguyenLieu.*.DinhLuong' => 'required|numeric|min:0.1',
+        'BuocThucHien' => 'required|array|min:1',
+        'BuocThucHien.*.STT' => 'required|integer|min:1',
+        'BuocThucHien.*.NoiDung' => 'required|string',
+        'BuocThucHien.*.HinhAnh' => 'nullable|string',
         ];
     }
     // Hàm upload và chuẩn hóa file ảnh
@@ -77,16 +78,11 @@ class CongThucController extends Controller
             'message' => 'Lấy danh sách món mới thành công',
             'data' => $data
         ], 200);
-        return response()->json([
-            'success' => true,
-            'message' => 'Lấy danh sách món mới thành công',
-            'data' => $data
-        ], 200);
+        
     }
     // Lấy danh sách công thức được xem nhiều nhất (4 món nổi bật)
     public function layDSCongThucNoiBat()
     {
-        $data = $this->congThucService->layDSCongThucNoiBat();
         $data = $this->congThucService->layDSCongThucNoiBat();
 
         return response()->json([
@@ -94,11 +90,7 @@ class CongThucController extends Controller
             'message' => 'Lấy danh sách món nổi bật thành công',
             'data' => $data
         ], 200);
-        return response()->json([
-            'success' => true,
-            'message' => 'Lấy danh sách món nổi bật thành công',
-            'data' => $data
-        ], 200);
+       
     }
     // Hiển thị 1 công thức nổi bật theo vùng miền ( miền bắc, miền trung, miền nam )
     public function layCongThucNoiBatTheoMien(string $mien)
@@ -149,7 +141,7 @@ class CongThucController extends Controller
     }
 
     // Thảo - Thêm công thức
-    public function themCongThuc(Request $request)
+    public function themCongThuc(Request $request, ThongBaoService $thongBaoService)
     {
         $request->validate($this->getValidationRules());
         $user = $request->user(); //  Lấy mã người dùng đăng nhập
@@ -165,7 +157,8 @@ class CongThucController extends Controller
         }
 
         $congThuc = $this->congThucService->createCongThuc($request, $user);
-
+        //Khanh - Gửi thông báo cho Admin về công thức mới
+        $this->guiThongBaoAdmin($congThuc, $user, $thongBaoService);
         return response()->json([
             'success' => true,
             'data' => $congThuc
@@ -379,6 +372,23 @@ class CongThucController extends Controller
                 'message' => 'Lỗi server',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+    // Khanh - Gửi thông báo duyệt/từ chối công thức cho Admin và người dùng
+    private function guiThongBaoAdmin($congThuc, $user, ThongBaoService $thongBaoService)
+    {
+        try {
+            if ($congThuc && $user) {
+                $thongBaoService->guiThongBaoChoAdmin(
+                    'CongThuc',
+                    $congThuc->Ma_CT,
+                    $congThuc->TieuDe,
+                    $user->HoTen
+                );
+            }
+        } catch (\Exception $e) {
+            // Nếu lỗi thì ghi Log hệ thống chứ không dừng chương trình
+            \Illuminate\Support\Facades\Log::error('Lỗi gửi thông báo: ' . $e->getMessage());
         }
     }
 }

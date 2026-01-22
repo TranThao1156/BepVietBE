@@ -17,7 +17,7 @@ use App\Http\Controllers\API\BlogController;
 use App\Http\Controllers\API\BinhLuanController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\QuanLyController;
-
+use App\Http\Controllers\API\ThongBaoController;
 // 1. PUBLIC ROUTES (KHÔNG CẦN ĐĂNG NHẬP)
 
 // Khanh - Xác thực ---
@@ -93,9 +93,6 @@ Route::middleware('auth:sanctum')->group(function () {
         //Khanh - Hiển thị danh sách Blog chờ duyệt
         Route::get('/duyet-blog', [KiemDuyetController::class, 'layDanhSachBlog']);
         //Khanh - Xử lý duyệt blog
-
-        // 2. Xử lý duyệt hoặc từ chối bài viết
-        // URL: POST /api/admin/duyet-blog/xu-ly
         Route::post('/duyet-blog/xu-ly', [KiemDuyetController::class, 'xuLyDuyetBlog']);
 
         // Trâm - đã thêm: kiểm duyệt công thức (tương tự duyệt blog)
@@ -112,7 +109,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Thi - Chi tiết người dùng
         Route::get('/quan-ly-nguoi-dung/{id}', [QuanLyController::class, 'layThongTinCaNhan']);
-        
+
         // Thi - Cập nhật thông tin người dùng
         Route::post('/quan-ly-nguoi-dung/cap-nhat/{id}', [QuanLyController::class, 'capNhatNguoiDung']);
 
@@ -145,8 +142,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cong-thuc/xoa-cong-thuc/{Ma_CT}', [CongThucController::class, 'xoaCongThuc']);
 
 
-
-        // Thêm bình luận (Hoặc trả lời)
+        // Thêm bình luận 
         Route::post('/binh-luan/them', [BinhLuanController::class, 'luuBinhLuan']);
 
         // Sửa bình luận
@@ -224,5 +220,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/danh-gia', [DanhGiaController::class, 'danhGia']);
 
         Route::get('/danh-gia/cua-toi/{maCongThuc}', [DanhGiaController::class, 'layDanhGiaCuaToi']);
+
+        //Khanh - Thông báo cho Admin và người dùng khi duyệt bài
+        Route::get('/thong-bao', [ThongBaoController::class, 'index']);           // Lấy danh sách
+        Route::put('/thong-bao/{id}/da-doc', [ThongBaoController::class, 'danhDauDaDoc']); // Đọc 1 cái
+        Route::put('/thong-bao/doc-tat-ca', [ThongBaoController::class, 'docTatCa']);      // Đọc hết
     });
 });

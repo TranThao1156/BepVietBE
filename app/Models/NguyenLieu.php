@@ -8,14 +8,13 @@ class NguyenLieu extends Model
 {
     protected $table = 'nguyenlieu';
     protected $primaryKey = 'Ma_NL';
-
     protected $fillable = [
         'TenNguyenLieu',
         'DonViDo',
         'TrangThai'
     ];
 
-    public $timestamps = true;
+    public $timestamps = false;
 
     public function congThuc()
     {
