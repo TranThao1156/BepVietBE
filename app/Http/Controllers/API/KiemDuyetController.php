@@ -5,14 +5,17 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\KiemDuyetService;
+use App\Services\ThongBaoService;
 
 class KiemDuyetController extends Controller
 {
     protected $dichVu;
+    protected $thongBaoService;
 
-    public function __construct(KiemDuyetService $service)
+    public function __construct(KiemDuyetService $service, ThongBaoService $thongBaoService)
     {
         $this->dichVu = $service;
+        $this->thongBaoService = $thongBaoService;
     }
 
     public function layDanhSachBlog(Request $request)
@@ -30,25 +33,44 @@ class KiemDuyetController extends Controller
     {
         $request->validate([
             'ma_blog'   => 'required',
-            'hanh_dong' => 'required|in:approve,reject'
+            'hanh_dong' => 'required|in:approve,reject' 
         ]);
 
+        $action = $request->input('hanh_dong');
+
+        // Gọi Service để cập nhật DB
         $ketQua = $this->dichVu->capNhatTrangThai(
-            $request->input('ma_blog'), 
-            $request->input('hanh_dong')
+            $request->input('ma_blog'),
+            $action
         );
 
         if (!$ketQua['thanh_cong']) {
             return response()->json(['message' => $ketQua['thong_bao']], 404);
         }
 
+        // Lấy đối tượng Blog vừa được cập nhật từ kết quả trả về
+        $blog = $ketQua['du_lieu'];
+
+        if ($blog) {
+            // Mapping hành động sang trạng thái thông báo
+            $trangThaiDuyet = ($action === 'approve') ? 'duyet' : 'tu_choi';
+
+            $this->thongBaoService->guiThongBaoChoNguoiDung(
+                $blog->Ma_ND,     
+                'Blog',            
+                $blog->Ma_Blog,   
+                $blog->TieuDe,   
+                $trangThaiDuyet   
+            );
+        }
+        // ---------------------------------
+
         return response()->json([
             'status'  => 200,
             'message' => $ketQua['thong_bao'],
-            'data'    => $ketQua['du_lieu']
+            'data'    => $blog
         ]);
     }
-
     // Trâm - đã thêm: API duyệt công thức (giống duyệt blog)
     public function layDanhSachCongThuc(Request $request)
     {
@@ -68,19 +90,39 @@ class KiemDuyetController extends Controller
             'hanh_dong' => 'required|in:approve,reject'
         ]);
 
+        $action = $request->input('hanh_dong');
+
+        // Gọi Service cập nhật DB
         $ketQua = $this->dichVu->capNhatTrangThaiCongThuc(
             $request->input('ma_ct'),
-            $request->input('hanh_dong')
+            $action
         );
 
         if (!$ketQua['thanh_cong']) {
             return response()->json(['message' => $ketQua['thong_bao']], 404);
         }
 
+        // --- 5. GỬI THÔNG BÁO CHO USER ---
+        $congThuc = $ketQua['du_lieu'];
+
+        if ($congThuc) {
+            $trangThaiDuyet = ($action === 'approve') ? 'duyet' : 'tu_choi';
+
+            $this->thongBaoService->guiThongBaoChoNguoiDung(
+                $congThuc->Ma_ND, 
+                'CongThuc',        
+                $congThuc->Ma_CT,   
+                $congThuc->TieuDe, 
+                $trangThaiDuyet     
+            );
+        }
+        // ---------------------------------
+
         return response()->json([
             'status'  => 200,
             'message' => $ketQua['thong_bao'],
-            'data'    => $ketQua['du_lieu']
+            'data'    => $congThuc
         ]);
     }
+    
 }

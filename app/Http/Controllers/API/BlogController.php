@@ -8,7 +8,7 @@ use App\Models\Blog;
 use App\Services\BlogService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-
+use App\Services\ThongBaoService;
 
 class BlogController extends Controller
 {
@@ -22,10 +22,10 @@ class BlogController extends Controller
     {
         $data = $this->blogService->layDSBlog();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Lấy danh sách blog mới thành công',
-                'data' => $data
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy danh sách blog mới thành công',
+            'data' => $data
         ], 200);
     }
 
@@ -55,9 +55,9 @@ class BlogController extends Controller
             'data' => $blogs
         ], 200);
     }
- 
+
     // Thi - Thêm blog
-    public function themBlog(Request $request)
+    public function themBlog(Request $request, ThongBaoService $thongBaoService)
     {
         // Validate dữ liệu
         $request->validate([
@@ -72,7 +72,7 @@ class BlogController extends Controller
         ]);
 
         // Lấy user từ token
-        /** @var \App\Models\User $user */
+        /** @var \App\Models\User $user **/
         $user = auth()->user();
         // Nếu chưa đăng nhập
         if (!$user) {
@@ -80,9 +80,10 @@ class BlogController extends Controller
                 'message' => 'Chưa đăng nhập'
             ], 401);
         }
-        
-        $blog = $this->blogService->themBlog($request, $user);
 
+        $blog = $this->blogService->themBlog($request, $user);
+        //Khanh - Gửi thông báo cho Admin về công thức mới
+        $this->guiThongBaoAdmin($blog, $user, $thongBaoService);
         return response()->json([
             'message' => 'Tạo blog thành công, đang chờ duyệt',
             'data' => $blog
@@ -110,7 +111,6 @@ class BlogController extends Controller
                 'message' => 'Xoá blog thành công',
                 'data' => $result
             ], 200);
-
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
@@ -159,23 +159,36 @@ class BlogController extends Controller
                 'success' => true,
                 'data' => $data
             ], 200);
-            
-        } 
-            // 1. Blog có tồn tại không (kể cả đã xoá)
-            catch (ModelNotFoundException $e) {
+        }
+        // 1. Blog có tồn tại không (kể cả đã xoá)
+        catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 404);
-
-        } 
-          // 2. Không phải blog của user 
-            catch (AuthorizationException $e) {
+        }
+        // 2. Không phải blog của user 
+        catch (AuthorizationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 403);
         }
     }
-
+    private function guiThongBaoAdmin($blog, $user, ThongBaoService $thongBaoService)
+    {
+        try {
+            if ($blog && $user) {
+                $thongBaoService->guiThongBaoChoAdmin(
+                    'Blog',
+                    $blog->Ma_Blog,
+                    $blog->TieuDe,
+                    $user->HoTen
+                );
+            }
+        } catch (\Exception $e) {
+            // Nếu lỗi thì ghi Log hệ thống chứ không dừng chương trình
+            \Illuminate\Support\Facades\Log::error('Lỗi gửi thông báo: ' . $e->getMessage());
+        }
+    }
 }

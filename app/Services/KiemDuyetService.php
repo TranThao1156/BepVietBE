@@ -39,9 +39,8 @@ class KiemDuyetService
         return CongThuc::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
             ->where('TrangThaiDuyet', $trangThaiDB)
             // Trâm - đã sửa: sắp xếp giống kiểm duyệt bài viết (ưu tiên mới nhất theo created_at)
-            // ->orderBy('created_at', 'desc')
-            // Trâm - đã thêm: nếu trùng created_at thì ưu tiên mã nhỏ hơn
-            ->orderBy('Ma_CT', 'asc')
+
+            ->orderBy('Ma_CT', 'desc')
             ->get();
     }
 
