@@ -57,6 +57,7 @@ class CongThucController extends Controller
         return null;
     }
 
+    // Trâm - Tìm kiếm công thức
     public function timKiem(Request $request)
     {
         // Gọi sang Service xử lý

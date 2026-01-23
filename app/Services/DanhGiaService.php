@@ -30,13 +30,10 @@ class DanhGiaService
         $userId = Auth::user()?->Ma_ND ?? Auth::id();
         $maCongThuc = (int) $data['Ma_CT'];
         $soSao = $data['SoSao'];
-
         // Trâm - đã thêm: chỉ cho đánh giá khi công thức đã được duyệt
         $this->assertCongThucDuocPhepDanhGia($maCongThuc);
-
         // Sử dụng Transaction để đảm bảo an toàn dữ liệu
         return DB::transaction(function () use ($userId, $maCongThuc, $soSao) {
-            
             // 1. Thêm hoặc Sửa
             $danhGia = DanhGia::updateOrCreate(
                 [
@@ -49,13 +46,10 @@ class DanhGiaService
                     'NoiDung' => $data['NoiDung'] ?? null 
                 ]
             );
-
             // 2. Tính lại trung bình sao ngay lập tức
             $trungBinhMoi = $this->capNhatTrungBinhSao($maCongThuc);
-
-            // 3. 🔥 REALTIME: Bắn sự kiện
+            // 3. REALTIME
             broadcast(new DanhGiaMoi($maCongThuc, $trungBinhMoi))->toOthers();
-
             return [
                 'danh_gia' => $danhGia,
                 'trung_binh_moi' => $trungBinhMoi

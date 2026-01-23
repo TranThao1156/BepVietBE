@@ -76,38 +76,28 @@ class KiemDuyetController extends Controller
     {
         $trangThai = $request->query('trang_thai', 'pending');
         $data = $this->dichVu->layDanhSachCongThuc($trangThai);
-
         return response()->json([
             'status' => 200,
             'data'   => $data
         ]);
     }
-
     public function xuLyDuyetCongThuc(Request $request)
     {
         $request->validate([
             'ma_ct'     => 'required',
             'hanh_dong' => 'required|in:approve,reject'
         ]);
-
         $action = $request->input('hanh_dong');
-
-        // Gọi Service cập nhật DB
-        $ketQua = $this->dichVu->capNhatTrangThaiCongThuc(
-            $request->input('ma_ct'),
+        $ketQua = $this->dichVu->capNhatTrangThaiCongThuc( // Gọi Service cập nhật DB
+            $request->input('ma_ct'), 
             $action
         );
-
         if (!$ketQua['thanh_cong']) {
             return response()->json(['message' => $ketQua['thong_bao']], 404);
         }
-
-        // --- 5. GỬI THÔNG BÁO CHO USER ---
-        $congThuc = $ketQua['du_lieu'];
-
+        $congThuc = $ketQua['du_lieu']; // GỬI THÔNG BÁO CHO USER 
         if ($congThuc) {
             $trangThaiDuyet = ($action === 'approve') ? 'duyet' : 'tu_choi';
-
             $this->thongBaoService->guiThongBaoChoNguoiDung(
                 $congThuc->Ma_ND, 
                 'CongThuc',        
@@ -116,8 +106,6 @@ class KiemDuyetController extends Controller
                 $trangThaiDuyet     
             );
         }
-        // ---------------------------------
-
         return response()->json([
             'status'  => 200,
             'message' => $ketQua['thong_bao'],

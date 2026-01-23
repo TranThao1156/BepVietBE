@@ -53,29 +53,21 @@ class BinhLuanBlogService
     {
         // Trâm - đã thêm: hỗ trợ trả lời nhiều cấp (Parent_ID) và validate Parent_ID thuộc đúng bài viết
         $maBlog = (int) $data['Ma_Blog'];
-
         // Trâm - đã thêm: blog chưa duyệt thì không cho người lạ bình luận
         $this->assertBlogDuocPhepBinhLuan($maBlog);
-
         $parentId = null;
-
         if (isset($data['Parent_ID']) && $data['Parent_ID'] !== null && $data['Parent_ID'] !== '') {
             $parentId = (int) $data['Parent_ID'];
-
             $parent = BinhLuan::find($parentId);
             if (!$parent) {
                 throw new Exception("Bình luận cha không tồn tại.", 404);
             }
-
-            // Phải cùng blog
-            if ((int) $parent->Ma_Blog !== $maBlog) {
+            if ((int) $parent->Ma_Blog !== $maBlog) { // Phải cùng blog
                 throw new Exception("Không thể trả lời bình luận của bài viết khác.", 403);
             }
         }
-
         // Trâm - đã thêm: dự án dùng khóa chính Ma_ND nên lấy userId theo Ma_ND để lưu bình luận đúng
         $userId = Auth::user()?->Ma_ND ?? Auth::id();
-
         $binhLuan = BinhLuan::create([
             'Ma_ND'      => $userId,
             'Ma_Blog'    => $maBlog,
@@ -85,13 +77,9 @@ class BinhLuanBlogService
             'LoaiBL'     => 1, // 1 là Blog
             'TrangThai'  => 1  // 1 là Hoạt động
         ]);
-
         // Load thông tin người dùng để trả về frontend
         $binhLuanFull = $binhLuan->load('nguoiDung');
-
-        //  BẮN REALTIME: Gửi cho người khác trừ người vừa comment
-        broadcast(new BinhLuanBlogMoi($binhLuanFull))->toOthers();
-
+        broadcast(new BinhLuanBlogMoi($binhLuanFull))->toOthers(); //REALTIME
         return $binhLuanFull;
     }
 

@@ -33,7 +33,6 @@ class KiemDuyetService
             'approved' => 'Chấp nhận',
             'rejected' => 'Từ chối'
         ];
-
         $trangThaiDB = $mapTrangThai[$trangThaiFrontend] ?? 'Chờ duyệt';
 
         return CongThuc::with(['nguoiDung:Ma_ND,HoTen,AnhDaiDien'])
@@ -43,18 +42,15 @@ class KiemDuyetService
             ->orderBy('Ma_CT', 'desc')
             ->get();
     }
-
     public function capNhatTrangThai($maBlog, $hanhDong)
     {
         $baiViet = Blog::find($maBlog);
-
         if (!$baiViet) {
             return [
                 'thanh_cong' => false,
                 'thong_bao'  => 'Không tìm thấy bài viết'
             ];
         }
-
         // Cập nhật đúng từ khóa tiếng Việt có dấu vào DB
         if ($hanhDong === 'approve') {
             $baiViet->TrangThaiDuyet = 'Chấp nhận'; //
@@ -63,9 +59,7 @@ class KiemDuyetService
             $baiViet->TrangThaiDuyet = 'Từ chối';   //
             $baiViet->TrangThai = 0; 
         }
-
         $baiViet->save();
-
         return [
             'thanh_cong' => true,
             'thong_bao'  => 'Cập nhật thành công',

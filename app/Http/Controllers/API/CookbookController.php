@@ -231,35 +231,26 @@ class CookbookController extends Controller
     }
     public function update(Request $request, $id)
     {
-        // 1. Validate (Cho phép tên và ảnh)
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [ // 1. Validate (Cho phép tên và ảnh)
             'TenCookBook' => 'required|string|max:255',
             'AnhBia'      => 'nullable|image|max:2048', // Ảnh tối đa 2MB
         ]);
-
         if ($validator->fails()) {
             return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
         }
-
         $user = auth('sanctum')->user();
         if (!$user) return response()->json(['message' => 'Chưa đăng nhập'], 401);
-
-        // 2. Gọi Service
-        // Chú ý: $request->file('AnhBia') sẽ lấy file thật
-        $updatedCookbook = $this->cookbookService->capNhatCookbook(
+        $updatedCookbook = $this->cookbookService->capNhatCookbook( // Gọi Service - Chú ý: $request->file('AnhBia') sẽ lấy file thật
             $id,
             $request->all(),
             $request->file('AnhBia'), // Truyền file ảnh riêng
             $user->Ma_ND
         );
-
         if ($updatedCookbook) {
-            // Xử lý link ảnh để trả về frontend hiển thị ngay
-            $anhBiaUrl = $updatedCookbook->AnhBia;
+            $anhBiaUrl = $updatedCookbook->AnhBia; // Xử lý link ảnh để trả về frontend hiển thị ngay
             if ($anhBiaUrl && !str_starts_with($anhBiaUrl, 'http')) {
                 $anhBiaUrl = url('storage/img/CookBook/' . $anhBiaUrl);
             }
-
             return response()->json([
                 'success' => true,
                 'message' => 'Cập nhật thành công',
@@ -288,12 +279,10 @@ class CookbookController extends Controller
     }
     public function themMonVaoCookbook(Request $request)
     {
-        // 1. Validate
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [  // Validate
             'Ma_CookBook' => 'required|integer',
             'Ma_CT'       => 'required|integer|exists:congthuc,Ma_CT',
         ]);
-
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -301,26 +290,22 @@ class CookbookController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-
         $user = auth('sanctum')->user();
         if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
-
-        // 2. Gọi Service xử lý
+        // Gọi Service xử lý
         $result = $this->cookbookService->themMonVaoCookbook(
             $user->Ma_ND,
             $request->Ma_CookBook,
             $request->Ma_CT
         );
-
-        // 3. Trả về kết quả
+        // Trả về kết quả
         if ($result['success']) {
             return response()->json([
                 'success' => true,
                 'message' => $result['message']
             ], 200);
         } else {
-            // Lỗi nghiệp vụ (ví dụ: đã tồn tại, không phải chủ sở hữu)
-            return response()->json([
+            return response()->json([  //Xuất lỗi
                 'success' => false,
                 'message' => $result['message']
             ], 400); 

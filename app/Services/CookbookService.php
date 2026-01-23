@@ -149,21 +149,19 @@ class CookbookService
             ->orderByDesc('Ma_CookBook')
             ->get();
     }
+    
     public function themMonVaoCookbook($userId, $cookbookId, $recipeId)
     {
-        // 1. Kiểm tra quyền sở hữu: Cookbook này có phải của User này không?
-        $cookbook = Cookbook::where('Ma_CookBook', $cookbookId)
-            ->where('Ma_ND', $userId)
+        $cookbook = Cookbook::where('Ma_CookBook', $cookbookId) 
+            ->where('Ma_ND', $userId) // Kiểm tra quyền sở hữu: Cookbook này có phải của User này không?
             ->first();
-
         if (!$cookbook) {
             return [
                 'success' => false,
                 'message' => 'Bộ sưu tập không tồn tại hoặc bạn không có quyền sở hữu.'
             ];
         }
-
-        // 2. Kiểm tra trùng lặp: Món này đã có trong Cookbook chưa?
+        // Kiểm tra trùng lặp: Món này đã có trong Cookbook chưa?
         // Sử dụng relationship 'congthucs' đã định nghĩa trong Model
         // ct_cookbook là tên bảng trung gian, Ma_CT là khóa ngoại
         $exists = $cookbook->congthucs()
@@ -176,14 +174,9 @@ class CookbookService
                 'message' => 'Món ăn này đã có trong bộ sưu tập rồi!'
             ];
         }
-
-        // 3. Thực hiện thêm (Attach)
         // attach() sẽ tự động thêm dòng vào bảng trung gian ct_cookbook
-        $cookbook->congthucs()->attach($recipeId, [
-            // Nếu bảng trung gian có cột created_at thì bỏ comment dòng dưới
-            // 'created_at' => now() 
+        $cookbook->congthucs()->attach($recipeId, [  // Thực hiện thêm (Attach)
         ]);
-
         return [
             'success' => true,
             'message' => 'Đã lưu món ăn vào bộ sưu tập thành công!'
